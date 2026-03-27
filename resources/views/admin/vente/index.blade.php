@@ -74,7 +74,7 @@
             <thead class="table-dark text-center">
                 <tr>
                     <th>#</th>
-                    <th>Catégorie</th>git
+                    <th>Catégorie</th>
                     <th>Description</th>
                     <th>Effectif</th>
                     <th>Prix unit.</th>

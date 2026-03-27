@@ -96,10 +96,8 @@
                                 #V-{{ str_pad($vente->id, 4, '0', STR_PAD_LEFT) }}
                             </td>
 
-                            {{-- ← relation description --}}
                             <td>{{ $vente->description->description ?? '—' }}</td>
 
-                            {{-- ← relation categorie (remplace sousCategory) --}}
                             <td>{{ $vente->categorie->stock_categorie ?? '—' }}</td>
 
                             <td>{{ $vente->effectif }}</td>
@@ -110,7 +108,6 @@
                                 {{ number_format($vente->prix_total, 0, ',', ' ') }} Ar
                             </td>
 
-                            {{-- ← prix_achat depuis categorie, cast int --}}
                             <td class="revenue-positive">
                                 +{{ number_format($revenu, 0, ',', ' ') }} Ar
                             </td>
@@ -126,7 +123,6 @@
             </table>
         </div>
 
-        {{-- Accès rapide --}}
         <div class="card gray">
             <div class="card-title ">Accès rapide</div>
             <p style="font-size:13px;margin-bottom:1rem;">

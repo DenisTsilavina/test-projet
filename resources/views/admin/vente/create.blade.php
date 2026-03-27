@@ -33,7 +33,7 @@
                                     @foreach($description->sousCategories as $sous)
 
                                         <button type="button"
-                                                class="btn btn-outline-success w-100 mb-2 add-to-sale"
+                                                class="btn btn-outline-gray w-100 mb-2 add-to-sale"
                                                 data-stock="{{ $stock->id }}"
                                                 data-description="{{ $description->id }}"
                                                 data-categorie="{{ $sous->id }}"
@@ -45,7 +45,7 @@
 
                                             <span class="fw-semibold">{{ $description->description }}</span>
                                             — {{ $sous->stock_categorie }}
-                                            <span class="badge bg-success ms-1">{{ number_format($sous->prix_achat, 0, ',', ' ') }} Ar</span>
+                                            <span class="badge bg-secondary ms-1">{{ number_format($sous->prix_achat, 0, ',', ' ') }} Ar</span>
                                         </button>
 
                                     @endforeach
@@ -84,7 +84,7 @@
                     <tfoot>
                     <tr class="table-light">
                         <th colspan="5" class="text-end">Total général</th>
-                        <th id="grand-total" class="text-success">0 Ar</th>
+                        <th id="grand-total" class="text-black">0 Ar</th>
                         <th></th>
                     </tr>
                     </tfoot>

@@ -72,19 +72,19 @@
     <div class="card">
         <table class="table table-striped table-hover mb-0">
             <thead class="table-dark text-center">
-            <tr>
-                <th>#</th>
-                <th>Catégorie</th>
-                <th>Description</th>
-                <th>Effectif</th>
-                <th>Prix unit.</th>
-                <th>Prix achat</th>
-                <th>Total</th>
-                <th>Revenu net</th>
-                <th>Vendeur</th>
-                <th>Date</th>
-                <th>Actions</th>
-            </tr>
+                <tr>
+                    <th>#</th>
+                    <th>Catégorie</th>git
+                    <th>Description</th>
+                    <th>Effectif</th>
+                    <th>Prix unit.</th>
+                    <th>Prix achat</th>
+                    <th>Total</th>
+                    <th>Revenu net</th>
+                    <th>Vendeur</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
             </thead>
             <tbody>
             @forelse($varotra as $vente)

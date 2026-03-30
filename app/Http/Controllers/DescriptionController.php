@@ -23,17 +23,7 @@ class DescriptionController extends Controller
         $stock = Stock::findOrFail($id);
         return view('stock.description-create', compact('stock'));
     }
-    /**
-    public function createCategory(Request $request, $description_id)
-    {
-        $validated = $request->validate([
-            'name_categorie' => 'required',
-        ]);
-        $validated['description_id'] = $description_id;
-        SousCategory::create($validated);
-        return redirect()->route('stock.index',$description_id);
-    }
-     */
+
 
     public function store (Request $request)
     {
@@ -74,6 +64,11 @@ class DescriptionController extends Controller
             dd($e->getMessage());
             return redirect()->back()->with('error', 'Erreur lors de les enregistrements.');
         }
+    }
+    public function update()
+    {
+
+
     }
     public function destroy( Description $description){
         $description ->delete();

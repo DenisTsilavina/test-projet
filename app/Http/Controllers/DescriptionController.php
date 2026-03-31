@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DescriptionRequest;
 use App\Models\Description;
 use App\Models\SousCategory;
 use App\Models\Stock;
@@ -65,9 +66,40 @@ class DescriptionController extends Controller
             return redirect()->back()->with('error', 'Erreur lors de les enregistrements.');
         }
     }
-    public function update()
+    public function update(DescriptionRequest $descriptionRequest, $id)
     {
+        $validated = $descriptionRequest->validated();
+        try {
+            DB::transaction(function () use ($validated, $id) {
 
+                $description = Description::findOrFail($id);
+                $description->update([
+                    'description' => $validated['description'],
+                    'effectif' => $validated['effectif'],
+                    'stock_id' => $validated['stock_id'],
+                    'stock_categorie' => $validated['stock_categorie'] ?? null,
+                ]);
+
+                if (!empty($validated['stock_categorie'])) {
+                    SousCategory::updateOrCreate(
+                        ['description_id' => $description->id],
+                        [
+                            'stock_categorie' => $validated['stock_categorie'],
+                            'prix_achat' => $validated['prix_achat'],
+                            'prix_vente' => $validated['prix_vente'],
+                        ]
+                    );
+                } else {
+                    SousCategory::where('description_id', $description->id)->delete();
+                }
+            });
+
+            return redirect()->route('stock.index')->with('success', 'Description mise à jour avec succès !');
+
+        } catch (\Exception $e) {
+            dd($e->getMessage());
+            return redirect()->back()->with('error', 'Erreur lors de la mise à jour.');
+        }
 
     }
     public function destroy( Description $description){

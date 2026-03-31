@@ -17,3 +17,15 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+.
+/vendor/
+/node_modules/
+/storage
+/storage/app/*
+/storage/framework/*
+
+*.log 
+*.tmp
+*.bak 
+*.old 
+*.orig

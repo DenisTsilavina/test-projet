@@ -23,11 +23,12 @@ class DescriptionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'description' => 'required','string',
-            'effectif' => 'required','string',
-            'stock_categorie' => 'required','string',
-            'prix_achat'=>'required','integer',
-            'prix_vente'=>'required', 'integer'
+            'description' => 'required|string',
+            'effectif' => 'required|integer',
+            'stock_id' => 'required|exists:stocks,id',
+            'stock_categorie'=> 'nullable|string',
+            'prix_achat' => 'nullable|numeric',
+            'prix_vente' => 'nullable|numeric',
         ];
     }
 }

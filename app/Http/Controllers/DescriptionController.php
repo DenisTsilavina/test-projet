@@ -66,6 +66,14 @@ class DescriptionController extends Controller
             return redirect()->back()->with('error', 'Erreur lors de les enregistrements.');
         }
     }
+
+    public function descriptionUpdate($id)
+    {
+        //dd("ok", $id);
+        // dd("OK ROUTE", $id);
+        $description = Description::with('sousCategories')->findOrFail($id);
+        return view('stock.description-update', compact('description'));
+    }
     public function update(DescriptionRequest $descriptionRequest, $id)
     {
         $validated = $descriptionRequest->validated();

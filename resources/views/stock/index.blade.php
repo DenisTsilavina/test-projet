@@ -60,7 +60,7 @@
                                                 <a href="{{ route('description.create', $stock->id) }}"
                                                    class="btn btn-sm btn-success">➕</a>
 
-                                                <a href="{{ route('description.edit', $desc->id) }}"
+                                                <a href="{{ route('description.descriptionUpdate', $desc->id) }}"
                                                    class="btn btn-sm btn-warning">✏</a>
 
                                                 <form action="{{ route('description.destroy', $desc->id) }}"
@@ -86,8 +86,9 @@
                                                     <a href="{{ route('description.create', $stock->id) }}"
                                                        class="btn btn-sm btn-success">➕</a>
 
-                                                    <a href=""
-                                                       class="btn btn-sm btn-warning">✏</a>
+                                                    <a href="{{ route('description.edit', $desc->id) }}"
+                                                       class="btn btn-sm btn-warning">✏
+                                                    </a>
 
                                                     <form action=""
                                                           method="POST">

@@ -27,7 +27,7 @@
 
                        <div class="mb-3">
                            <label>id</label>
-                           <input name="stock_id" value="{{ $stock->id }}">
+                           <input name="stock_id" value="{{ $stock->id }} - {{ $stock->name_stock }}">
                        </div>
 
 

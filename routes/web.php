@@ -54,6 +54,10 @@ Route::prefix('stock')->group(function () {
 
     Route::get('/stock/create/description/{stock_id}', [DescriptionController::class, 'createdescription'])->name('description.create');
     Route::delete('/description/{description}', [DescriptionController::class, 'destroy'])->name('description.destroy');
+
+    // route de modification description
+    Route::get('/description/{id}/edit', [DescriptionController::class, 'descriptionUpdate'])->name('description.edit');
+    Route::put('/description/{id}/update', [DescriptionController::class, 'update'])->name('description.update');
 });
 
  // Vente

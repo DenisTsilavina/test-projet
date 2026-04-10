@@ -4,6 +4,7 @@ use App\Http\Controllers\StockControllers;
 use App\Http\Controllers\DescriptionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VenteController;
+use App\Http\Controllers\ClientController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,32 +18,40 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::view('/', 'welcome');
 
-Route::view('dashboard',[UserController::class,'index'])
-    ->middleware(['auth', 'verified'])
+Route::get('/', [UserController::class, 'index'])->name('home');
+Route::get('/dashboard', [UserController::class, 'index'])
+    ->middleware('auth')
     ->name('dashboard');
-Route::get('/dashboard', [StockControllers::class, 'index'])
-    ->middleware(['auth'])
-    ->name('dashboard.redirect');
-
-Route::view('profile', 'profile')
-    ->middleware(['auth'])
-    ->name('profile');
 
 require __DIR__.'/auth.php';
 
 Auth::routes();
+// Admin
+Route::get('/admin/vente/dashboard', [VenteController::class, 'dashboard'])
+    ->middleware('auth')
+    ->name('admin.vente.dashboard');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
+// Client
+Route::get('/client/dashboard', [ClientController::class, 'index'])
+    ->middleware('auth')
+    ->name('client.dashboard');
+Route::get('/dashboard', [StockControllers::class, 'index'])
+    ->middleware(['auth'])
+    ->name('dashboard.redirect');
 
-//route pour les stocks
+// Stocks
+/**
+Route::get('/stocks', [StockControllers::class, 'index'])
+    ->middleware(['auth'])
+    ->name('stocks.index');
+*/
+
 Route::prefix('stock')->group(function () {
     Route::get('/stocks', [StockControllers::class, 'index'])->name('stock.index');
     Route::get('/stocks/create', [StockControllers::class, 'create'])->name('stock.create');
     Route::post('/stocks', [StockControllers::class, 'createStock'])->name('stock.store');
 });
-
 
 Route::prefix('stock')->group(function () {
     // Routes principales du Stock

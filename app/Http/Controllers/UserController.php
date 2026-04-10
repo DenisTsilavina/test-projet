@@ -9,11 +9,19 @@ class UserController extends Controller
 {
     public function index()
     {
-        if(Auth::check() && Auth::user()->user_type=='user'){
-            return view('dashboard');
+        if (Auth::check()) {
+            return redirect()->route('login');
         }
-        else if (Auth::check() && Auth::user()->user_type=='admin'){
+        $user = Auth::user();
+
+        if (Auth::check() && Auth::user()->user_type=='admin'){
             return view('admin.vente.dashboard');
         }
+
+        if(Auth::check() && Auth::user()->user_type=='user'){
+            return view('client.dashboard');
+        }
+
+        abort(403,'Accès non autorisé');
     }
 }

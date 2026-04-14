@@ -40,7 +40,7 @@
     <div class="metrics bg-dark-subtle">
         <div class="metric-card border-b-2">
             <div class="mc-label border-s-black">Total ventes</div>
-            <div class="mc-value">{{ $totalVente }}</div>
+            <div class="mc-value">{{$totalVente}}</div>
             <div class="mc-sub">Toutes périodes</div>
         </div>
 

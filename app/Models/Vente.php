@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-// Vente — corriger 'categorie_id' → 'sous_categorie_id'
+
 class Vente extends Model
 {
     use HasFactory;
@@ -16,6 +16,7 @@ class Vente extends Model
         'effectif',
         'prix_total',
     ];
+
     public function getRevenuNetAttribute()
     {
         $prixAchat = $this->categorie->prix_achat ?? 0;
@@ -31,5 +32,10 @@ class Vente extends Model
     }
     public function categorie() {
         return $this->belongsTo(SousCategory::class, 'categorie_id');
+    }
+
+    public function clients()
+    {
+        return $this->hasOne(Client::class , 'client_id');
     }
 }

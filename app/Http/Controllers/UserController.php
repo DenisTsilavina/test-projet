@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -9,19 +8,21 @@ class UserController extends Controller
 {
     public function index()
     {
-        if (Auth::check()) {
+        // Si NON connecté → rediriger vers register
+        if (!Auth::check()) {
             return redirect()->route('login');
         }
+
         $user = Auth::user();
 
-        if (Auth::check() && Auth::user()->user_type=='admin'){
-            return view('admin.vente.dashboard');
+        if ($user->user_type === 'admin') {
+            return view('admin.dashboard');
         }
 
-        if(Auth::check() && Auth::user()->user_type=='user'){
-            return view('client.dashboard');
+        if ($user->user_type === 'user') {
+            return view('client.achat');
         }
 
-        abort(403,'Accès non autorisé');
+        abort(403, 'Accès non autorisé');
     }
 }

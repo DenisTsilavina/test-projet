@@ -20,7 +20,7 @@ class UserController extends Controller
         }
 
         if ($user->user_type === 'user') {
-            return view('client.achat');
+            return view('client.dashboard');
         }
 
         abort(403, 'Accès non autorisé');

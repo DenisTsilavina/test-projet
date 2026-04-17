@@ -24,9 +24,9 @@ class VenteController extends Controller
         $descriptions = Description::where('effectif', '>', 0)->get();
         $categories  = SousCategory::all();
 
-        return view('admin.vente.create', compact('stocks', 'descriptions', 'categories')
+        return view('admin.vente.create', compact('stocks', 'descriptions', 'categories'));
             //passe en deuxieme view les donner
-            ->with('client.achat', 'stocks', 'descriptions', 'categories'));
+           // ->with('client.achat', 'stocks', 'descriptions', 'categories'));
     }
 
     function store(Request $request)

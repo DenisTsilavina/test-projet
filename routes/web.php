@@ -35,11 +35,19 @@ Route::post('/logout', function () {
 // ── Routes protégées ──
 Route::middleware('auth')->group(function () {
 
-    // Dashboard
+    // Dashboard user
     Route::get('/dashboard', [UserController::class, 'index'])->name('dashboard');
+
+    // Dashboard client
     Route::get('/client/dashboard', [ClientController::class, 'index'])->name('client.dashboard');
-    route::post('/create', [ClientController::class, 'createNewClient'])
-        ->name('client.createNewClient');
+
+    // Page d'achat
+
+    Route::get('/achat', [ClientController::class, 'achat'])->name('client.achat');
+
+    // Créer un nouveau client
+    Route::post('/client/create', [ClientController::class, 'createNewClient'])->name('client.createNewClient');
+
 });
 
 

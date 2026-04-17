@@ -3,142 +3,197 @@
 
 @push('styles')
     <style>
-        .metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; margin-bottom: 1.5rem; }
-        .metric-card {
-            background: var(--surface); border: 0.5px solid var(--border);
-            border-radius: var(--radius-lg); padding: 1rem 1.25rem;
+        /* Grille des métriques : 4 colonnes égales */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
         }
-        .metric-card .mc-label { font-size: 12px; color: var(--text-muted); margin-bottom: 6px; }
-        .metric-card .mc-value { font-size: 22px; font-weight: 600; color: var(--text); }
-        .metric-card .mc-sub   { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
-        .metric-card.green .mc-value { color: var(--accent-dark); }
 
-        .grid-2 { display: grid; grid-template-columns: 1fr 360px; gap: 1rem; }
-        @media (max-width: 900px) { .grid-2 { grid-template-columns: 1fr; } }
+        .metric-card {
+            background: #fff;
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 12px;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
 
-        .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
-        .card-title { font-size: 14px; font-weight: 600; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 0.5px solid var(--border); }
+        .metric-card .mc-label {
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 500;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
 
-        table { width: 100%; border-collapse: collapse; font-size: 13px; }
-        thead th { text-align: left; font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; padding: 0 8px 8px; border-bottom: 0.5px solid var(--border); }
-        tbody td { padding: 10px 8px; border-bottom: 0.5px solid var(--border); }
-        tbody tr:last-child td { border-bottom: none; }
-        tbody tr:hover td { background: var(--bg); }
+        .metric-card .mc-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+        }
 
-        .btn { display: inline-block; padding: 8px 16px; border-radius: var(--radius-md); font-size: 13px; font-weight: 500; text-decoration: none; border: 0.5px solid var(--border); cursor: pointer; background: var(--surface); color: var(--text); transition: background .15s; }
-        .btn:hover { background: var(--bg); }
-        .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-        .btn-primary:hover { background: var(--accent-dark); }
+        .metric-card .mc-sub {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-top: 6px;
+        }
 
-        .revenue-positive { color: var(--accent-dark); font-weight: 600; }
+        /* Couleur spécifique pour le revenu */
+        .card-revenue .mc-value { color: #10b981; }
+
+        /* Organisation du contenu : Tableau en large, Accès rapide en dessous ou à côté */
+        .dashboard-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: #fff;
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Tableau plein écran */
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table { width: 100%; border-collapse: collapse; }
+        thead th {
+            background: #f8fafc;
+            text-align: center;
+            font-size: 12px;
+            font-weight: 600;
+            color: #64748b;
+            padding: 12px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        tbody td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+
+        .revenue-positive { color: #10b981; font-weight: 600; }
+
+        @media (max-width: 1024px) {
+            .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .metrics-grid { grid-template-columns: 1fr; }
+        }
     </style>
 @endpush
 
 @section('content')
 
-    {{-- ── Métriques ── --}}
-    <div class="metrics bg-dark-subtle">
-        <div class="metric-card border-b-2">
-            <div class="mc-label border-s-black">Total ventes</div>
-            <div class="mc-value">{{$totalVente}}</div>
-            <div class="mc-sub">Toutes périodes</div>
-        </div>
+    <div class="dashboard-container">
 
-        <div class="metric-card b">
-            <div class="mc-label">Revenus nets</div>
-            <div class="mc-value">{{ number_format($totalRevenue, 0, ',', ' ') }} Ar</div>
-            <div class="mc-sub">Bénéfice cumulé</div>
-        </div>
-
-        <div class="metric-card">
-            <div class="mc-label">Chiffre d'affaires</div>
-            <div class="mc-value">{{ number_format($venteRecentes->sum('prix_total'), 0, ',', ' ') }} Ar</div>
-            <div class="mc-sub">Prix de vente total</div>
-        </div>
-
-        <div class="metric-card">
-            <div class="mc-label">Articles vendus</div>
-            <div class="mc-value">{{ $venteRecentes->sum('effectif') }}</div>
-            <div class="mc-sub">Unités écoulées</div>
-        </div>
-    </div>
-
-    {{-- ── Contenu principal ── --}}
-    <div class="grid-2">
-
-        {{-- Tableau des ventes récentes --}}
-        <div class="card lg:px-8">
-            <div class="card-title" style="display:flex;justify-content:space-between;align-items:center;">
-                Ventes récentes
-                <a href="{{ route('admin.vente.index') }}" class="btn btn-dark">Voir tout</a>
+        {{-- ── 1. Section Métriques (Chaque valeur dans sa div) ── --}}
+        <div class="metrics-grid">
+            <div class="metric-card">
+                <div class="mc-label">Total ventes</div>
+                <div class="mc-value">{{ $totalVente }}</div>
+                <div class="mc-sub">Nombre total de transactions</div>
             </div>
 
-            <table class="table table-striped table-hover mb-0">
-                <thead class="table-dark text-center">
+            <div class="metric-card card-revenue">
+                <div class="mc-label">Revenus nets</div>
+                <div class="mc-value">{{ number_format($totalRevenue, 0, ',', ' ') }} Ar</div>
+                <div class="mc-sub">Bénéfice après achat</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="mc-label">Chiffre d'affaires</div>
+                <div class="mc-value">{{ number_format($venteRecentes->sum('prix_total'), 0, ',', ' ') }} Ar</div>
+                <div class="mc-sub">Volume de vente récent</div>
+            </div>
+
+            <div class="metric-card">
+                <div class="mc-label">Articles vendus</div>
+                <div class="mc-value">{{ $venteRecentes->sum('effectif') }}</div>
+                <div class="mc-sub">Quantité totale écoulée</div>
+            </div>
+        </div>
+
+        {{-- ── 2. Tableau Principal (Agrandit) ── --}}
+        <div class="card">
+            <div class="card-title">
+                <span><i class="bi bi-clock-history me-2"></i>Ventes récentes</span>
+                <div class="d-flex gap-2">
+                    <a href="{{ route('admin.vente.create') }}" class="btn btn-primary btn-sm">
+                        <i class="bi bi-plus-lg"></i> Nouvelle vente
+                    </a>
+                    <a href="{{ route('admin.vente.index') }}" class="btn btn-outline-secondary btn-sm">Voir tout</a>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="table mb-0">
+                    <thead>
                     <tr>
-                        <th>#</th>
+                        <th>Référence</th>
                         <th>Description</th>
                         <th>Catégorie</th>
                         <th>Qté</th>
-                        <th>Prix unit.</th>
+                        <th>Prix Unit.</th>
                         <th>Total</th>
                         <th>Revenu</th>
                     </tr>
-                </thead>
-                <tbody class="text-center">
+                    </thead>
+                    <tbody class="text-center">
                     @forelse($venteRecentes as $vente)
                         @php
                             $prixAchat = (int) ($vente->categorie->prix_achat ?? 0);
-                            $revenu    = ((int)$vente->prix - $prixAchat) * (int)$vente->effectif;
+                            $revenu = ((int)$vente->prix - $prixAchat) * (int)$vente->effectif;
                         @endphp
                         <tr>
-                            <td style="color:var(--text-muted);">
-                                #V-{{ str_pad($vente->id, 4, '0', STR_PAD_LEFT) }}
-                            </td>
-
-                            <td>{{ $vente->description->description ?? '—' }}</td>
-
-                            <td>{{ $vente->categorie->stock_categorie ?? '—' }}</td>
-
+                            <td class="text-muted small">#V-{{ str_pad($vente->id, 4, '0', STR_PAD_LEFT) }}</td>
+                            <td class="text-start fw-medium">{{ $vente->description->description ?? '—' }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ $vente->categorie->stock_categorie ?? '—' }}</span></td>
                             <td>{{ $vente->effectif }}</td>
-
                             <td>{{ number_format($vente->prix, 0, ',', ' ') }} Ar</td>
-
-                            <td style="font-weight:600;">
-                                {{ number_format($vente->prix_total, 0, ',', ' ') }} Ar
-                            </td>
-
-                            <td class="revenue-positive">
-                                +{{ number_format($revenu, 0, ',', ' ') }} Ar
-                            </td>
+                            <td class="fw-bold">{{ number_format($vente->prix_total, 0, ',', ' ') }} Ar</td>
+                            <td class="revenue-positive">+ {{ number_format($revenu, 0, ',', ' ') }} Ar</td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" style="text-align:center;color:var(--text-muted);padding:2rem;">
+                            <td colspan="7" class="py-5 text-muted">
+                                <i class="bi bi-inbox fs-2 d-block mb-2"></i>
                                 Aucune vente enregistrée.
                             </td>
                         </tr>
                     @endforelse
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="card gray">
-            <div class="card-title ">Accès rapide</div>
-            <p style="font-size:13px;margin-bottom:1rem;">
-                Enregistrez une vente directement depuis cette page.
-            </p>
-            <a href="{{ route('admin.vente.create') }}"
-               class="btn btn-primary"
-               style="display:block;text-align:center;margin-bottom:10px;">
-                + Nouvelle vente
-            </a>
-            <a class="btn btn-danger" href="{{ route('admin.vente.index') }}"
-               style="display:block;text-align:center;">
-                Voir l'historique
-            </a>
+        {{-- ── 3. Accès Rapide (Optionnel en bas) ── --}}
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card border-0 bg-primary text-white">
+                    <div class="card-body">
+                        <h5 class="card-title text-white">Action rapide</h5>
+                        <p class="small">Besoin d'ajouter un nouveau produit en stock ?</p>
+                        <a href="{{ route('stock.create') }}" class="btn btn-light btn-sm w-100">Aller au Stock</a>
+                    </div>
+                </div>
+            </div>
         </div>
-
     </div>
 
 @endsection

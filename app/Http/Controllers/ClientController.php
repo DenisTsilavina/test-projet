@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use GuzzleHttp\Client;
+use App\Models\Client;
 use Illuminate\Http\Request;
 use App\Models\SousCategory;
 use App\Models\Description;
@@ -12,26 +12,31 @@ class ClientController extends Controller
 {
     public function index()
     {
-         $stocks= Stock::all();
-         $descriptions = Description::where('effectif', '>', 0)->get();
-         $categories  = SousCategory::all();
-         return view('client.achat', compact('stocks', 'descriptions', 'categories'));
+         $client = Client::all();
+         return view('client.dashboard', compact('client'));
+    }
+
+    public function achat( ){
+        $stocks= Stock::all();
+        $descriptions = Description::where('effectif', '>', 0)->get();
+        $categories  = SousCategory::all();
+        return view('client.achat', compact('stocks', 'descriptions', 'categories'));
     }
 
     public function createNewClient(Request $request)
     {
         $validated = $request->validate([
-            'adress' => 'required',
+            'address' => 'required',
             'ville' => 'required',
             'phone' => 'required',
         ]);
         Client::create([
             'user_id'=> auth()->id(),
-            'adress' => $request->adress,
+            'address' => $request->address,
             'ville' => $request->ville,
             'phone' => $request->phone,
         ]);
-        return redirect()->route('client.dashboard')->with('success', 'tu est authorise');
+        return redirect()->route('dashboard')->with('success', 'tu est authorise');
     }
 
 }

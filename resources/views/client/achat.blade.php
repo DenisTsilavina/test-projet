@@ -3,10 +3,10 @@
 @section('content')
     <div class="container py-4">
 
-        <form method="POST" action="{{ route('admin.vente.store') }}">
+      {{--  <form method="POST" action="{{ route('admin.vente.store') }}">
             @csrf
 
-            {{-- Erreurs globales --}}
+            // Erreurs globales
             @if($errors->any())
                 <div class="alert alert-danger">
                     <ul class="mb-0">
@@ -14,6 +14,7 @@
                             <li>{{ $error }}</li>
                         @endforeach
                     </ul>
+
                 </div>
             @endif
 
@@ -97,8 +98,10 @@
                 <i class="bi bi-check-circle me-1"></i> Enregistrer la vente
             </button>
 
-        </form>
+        </form>--}}
+        @include('client.achat')
     </div>
+
 @endsection
 
 @push('scripts')

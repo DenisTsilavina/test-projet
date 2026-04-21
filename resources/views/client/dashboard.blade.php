@@ -3,7 +3,7 @@
 @section('title', 'Votre Information')
 
 @section('content')
-
+    @include('client.stock')
         {{-- ================= CLIENT ================= --}}
         <div class="card mt-4 border-primary shadow-sm">
             <div class="card-header bg-primary text-white fw-semibold">

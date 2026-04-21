@@ -31,19 +31,26 @@ class VenteController extends Controller
 
     function store(Request $request)
     {
+        // ── 1. Validation ──
         $request->validate([
-            'ventes'=> 'required|array|min:1',
-            'ventes.*.stock_id' => 'required|exists:stocks,id',
+            // Ventes
+            'ventes'                  => 'required|array|min:1',
+            'ventes.*.stock_id'       => 'required|exists:stocks,id',
             'ventes.*.description_id' => 'required|exists:descriptions,id',
-            'ventes.*.categorie_id' => 'required|exists:sous_categories,id',
-            'ventes.*.prix' => 'required|numeric|min:0',
-            'ventes.*.effectif' => 'required|integer|min:1',
+            'ventes.*.categorie_id'   => 'required|exists:sous_categories,id',
+            'ventes.*.prix'           => 'required|numeric|min:0',
+            'ventes.*.effectif'       => 'required|integer|min:1',
+            // Client (correspond exactement aux champs fillable du modèle)
+            'address'                 => 'required|string|max:255',
+            'ville'                   => 'required|string|max:255',
+            'phone'                   => 'required|string|max:20',
+            'mode_paiement'           => 'required|string|in:espece,mvola,airtel_money,virement',
         ]);
 
+        // ── 2. Vérification des stocks ──
         $errors = [];
 
         foreach ($request->ventes as $i => $vente) {
-
             $description = Description::find($vente['description_id']);
 
             if (!$description) {
@@ -51,7 +58,6 @@ class VenteController extends Controller
                 continue;
             }
 
-            // ← comparer avec effectif de description (pas stock_categorie)
             if ((int)$vente['effectif'] > (int)$description->effectif) {
                 $errors["ventes.$i.effectif"] =
                     "Stock insuffisant pour « {$description->description} ». " .
@@ -63,22 +69,30 @@ class VenteController extends Controller
             return back()->withInput()->withErrors($errors);
         }
 
-        foreach ($request->ventes as $vente) {
+        // ── 3. Créer le client ──
+        $client = \App\Models\Client::create([
+            'user_id' => auth()->id(),
+            'address' => $request->address,
+            'ville'   => $request->ville,
+            'phone'   => $request->phone,
+        ]);
 
+        // ── 4. Enregistrer les ventes liées au client ──
+        foreach ($request->ventes as $vente) {
             $prix     = (int) $vente['prix'];
             $effectif = (int) $vente['effectif'];
 
             Vente::create([
-                'user_id'=> auth()->id(),
-                'description_id'=> (int) $vente['description_id'],
-                'categorie_id'=> (int) $vente['categorie_id'],
-                'prix'=> $prix,
-                'effectif'=> $effectif,
-                //  int * int, plus d'erreur
-                'prix_total'=> $prix * $effectif,
+                'user_id'        => auth()->id(),
+                'client_id'      => $client->id,
+                'description_id' => (int) $vente['description_id'],
+                'categorie_id'   => (int) $vente['categorie_id'],
+                'prix'           => $prix,
+                'effectif'       => $effectif,
+                'prix_total'     => $prix * $effectif,
+                'mode_paiement'  => $request->mode_paiement,
             ]);
 
-            //  décrémenter effectif dans descriptions (pas stock_categorie)
             Description::find($vente['description_id'])
                 ->decrement('effectif', $effectif);
         }

@@ -166,12 +166,12 @@
             <nav class="d-none d-lg-block">
                 <ul class="nav gap-1">
                     <li class="nav-item">
-                        <a href="{{ route('client.achat') }}" class="nav-link {{ request()->routeIs('client.achat') ? 'active' : '' }}">
+                        <a href="#" class="nav-link">
                             <i class="bi bi-grid"></i> Produits
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="#" class="nav-link">
+                        <a href="{{ route('client.achat') }}" class="nav-link">
                             <i class="bi bi-cart3"></i> Panier
                         </a>
                     </li>
@@ -200,7 +200,6 @@
                 </div>
 
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Mon Profil</a></li>
                     <li><a class="dropdown-item" href="#"><i class="bi bi-gear"></i> Paramètres</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>

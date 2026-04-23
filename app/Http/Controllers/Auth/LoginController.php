@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use http\Client\Request;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Ulluminate\Http\Requests;
 
 class LoginController extends Controller
 {
@@ -36,5 +38,16 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
         $this->middleware('auth')->only('logout');
+    }
+
+    public function logout(Request $request)
+    {
+        Auth::logout();
+
+        // Maintenant $request->session() fonctionnera parfaitement
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('client.dashboard');
     }
 }

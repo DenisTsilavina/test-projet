@@ -11,12 +11,16 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('clients', callback: function (Blueprint $table) {
+        Schema::create('clients', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->string('address');
-            $table->string('ville');
+            $table->string('nom');
+            $table->string('prenom');
+            $table->string('email')->unique();
             $table->string('phone');
+            $table->string('adresse');
+            $table->string('ville');
+            $table->string('password');
+            $table->rememberToken();
             $table->timestamps();
         });
     }

@@ -3,20 +3,33 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
-class Client extends Model
+class Client extends Authenticatable
 {
-    use HasFactory;
+    use Notifiable;
+    protected $guard = 'client';
 
     protected $fillable = [
-        'user_id',
-        'address',
-        'ville',
+        'nom',
+        'prenom',
+        'email',
         'phone',
+        'adresse',
+        'ville',
+        'password',
     ];
-    public function user()
+
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    protected function casts(): array
     {
-        return $this->belongsTo(User::class,'user_id');
+        return [
+            'password' => 'hashed',
+        ];
     }
 }

@@ -23,6 +23,7 @@ class ClientController extends Controller
         return view('client.achat', compact('stocks', 'descriptions', 'categories'));
     }
 
+
     public function createNewClient(Request $request)
     {
         $validated = $request->validate([

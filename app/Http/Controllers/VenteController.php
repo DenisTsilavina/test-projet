@@ -69,7 +69,7 @@ class VenteController extends Controller
             return back()->withInput()->withErrors($errors);
         }
 
-        // ── 3. Créer le client ──
+
         $client = \App\Models\Client::create([
             'user_id' => auth()->id(),
             'address' => $request->address,

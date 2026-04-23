@@ -102,7 +102,6 @@
 
     <div class="dashboard-container">
 
-        {{-- ── 1. Section Métriques (Chaque valeur dans sa div) ── --}}
         <div class="metrics-grid">
             <div class="metric-card">
                 <div class="mc-label">Total ventes</div>
@@ -129,7 +128,6 @@
             </div>
         </div>
 
-        {{-- ── 2. Tableau Principal (Agrandit) ── --}}
         <div class="card">
             <div class="card-title">
                 <span><i class="bi bi-clock-history me-2"></i>Ventes récentes</span>

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin.admin-layout')
 @section('title', 'Historique des ventes')
 
 @push('styles')

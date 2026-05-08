@@ -110,7 +110,7 @@
                             <div class="info-box">
                                 <span class="label">Effectif</span>
                                 <span class="value {{ $desc->effectif > 0 ? 'text-success' : 'text-danger' }}">
-                                    {{ $desc->effectif }} unités
+                                    {{ $desc->effectif }} {{$desc->unite->name ?? ""}}
                                 </span>
                             </div>
                             <div class="info-box">

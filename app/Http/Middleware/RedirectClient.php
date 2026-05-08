@@ -17,8 +17,8 @@ class RedirectClient
     public function handle(Request $request, Closure $next): Response
     {
         if (!Auth::guard('client')->check()) {
-            return redirect()->route('client.dashboard')
-                ->with('show_register_modal', true)
+            return redirect()->route('client.login') // ✅ rediriger vers login
+            ->with('show_register_modal', true)
                 ->with('message', 'Inscrivez-vous pour effectuer un achat.');
         }
         return $next($request);

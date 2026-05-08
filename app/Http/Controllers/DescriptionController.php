@@ -6,6 +6,7 @@ use App\Http\Requests\DescriptionRequest;
 use App\Models\Description;
 use App\Models\SousCategory;
 use App\Models\Stock;
+use App\Models\Unite;
 use Illuminate\Http\Request;
 use DB;
 
@@ -16,13 +17,15 @@ class DescriptionController extends Controller
         $stocks = Stock::with(['descriptions.sousCategories'])->get();
         $descriptions = Description::with(['sousCategories'])->get();
         $categories=SousCategory::all();
+        $unites=Unite::all();
 
-        return view('stock.index', compact('stocks', 'descriptions','categories'));
+        return view('stock.index', compact('stocks', 'descriptions','categories','unites'));
     }
     public function createdescription($id)
     {
         $stock = Stock::findOrFail($id);
-        return view('stock.description-create', compact('stock'));
+        $unites=Unite::all();
+        return view('stock.description-create', compact('stock','unites'));
     }
 
 
@@ -31,6 +34,7 @@ class DescriptionController extends Controller
         $validated = $request->validate([
             'description' => 'required|string',
             'effectif' => 'required|string',
+            'unite_id' => 'required|exists:unites,id',
             'stock_categorie' => 'nullable|string',
             'prix_achat'=>'nullable|integer',
             'prix_vente'=>'nullable|integer',
@@ -41,8 +45,10 @@ class DescriptionController extends Controller
                 $description= Description::create([
                     'description' => $validated['description'],
                     'effectif' => $validated['effectif'],
+                    'unite_id' => $validated['unite_id']?? null,
                     'stock_id' => $validated['stock_id'],
                     'stock_categorie' => $validated['stock_categorie'] ?? null,
+
 
                 ]);
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ecommerce-Denis – @yield('title', 'Boutique')</title>
+    <title>Vohitsoa Shop – @yield('title', 'Boutique')</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
@@ -13,8 +13,9 @@
 
     <style>
         :root {
-            --accent: #10b981;
-            --accent-soft: rgba(16, 185, 129, 0.1);
+            /* Couleurs basées sur le logo Tsenan'i Vohitsoa */
+            --accent: #2d5a27;
+            --accent-soft: rgba(45, 90, 39, 0.1);
             --bg-page: #f8fafc;
             --text-dark: #1e293b;
             --header-height: 70px;
@@ -42,18 +43,18 @@
 
         .navbar-brand {
             font-weight: 700;
-            font-size: 1.1rem;
-            color: var(--accent) !important;
+            font-size: 1.15rem;
+            color: var(--text-dark) !important;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .brand-icon {
-            width: 8px;
-            height: 8px;
-            background: var(--accent);
-            border-radius: 50%;
+        /* Style pour l'image du logo */
+        .brand-logo-img {
+            height: 35px;
+            width: auto;
+            object-fit: contain;
         }
 
         .nav-link {
@@ -67,15 +68,9 @@
             gap: 8px;
         }
 
-        .nav-link:hover {
-            color: var(--accent);
-            background: var(--accent-soft);
-        }
-
-        .nav-link.active {
+        .nav-link:hover, .nav-link.active {
             color: var(--accent) !important;
             background: var(--accent-soft);
-            font-weight: 600;
         }
 
         .profile-container {
@@ -93,7 +88,8 @@
         .avatar-modern {
             width: 36px;
             height: 36px;
-            background: linear-gradient(135deg, var(--accent), #059669);
+            /* Dégradé basé sur le vert du logo */
+            background: linear-gradient(135deg, var(--accent), #4a7c44);
             color: white;
             border-radius: 10px;
             display: flex;
@@ -101,7 +97,7 @@
             justify-content: center;
             font-weight: 700;
             font-size: 0.85rem;
-            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+            box-shadow: 0 4px 6px -1px rgba(45, 90, 39, 0.2);
         }
 
         .main-wrapper { padding: 2rem 0; }
@@ -121,13 +117,13 @@
             margin-top: 10px !important;
         }
 
-        .dropdown-item {
-            border-radius: 8px;
-            padding: 8px 12px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.9rem;
+        .btn-primary {
+            background-color: var(--accent);
+            border-color: var(--accent);
+        }
+        .btn-primary:hover {
+            background-color: #1e3d1a;
+            border-color: #1e3d1a;
         }
     </style>
     @stack('styles')
@@ -137,36 +133,37 @@
 <header class="navbar-main">
     <div class="container d-flex align-items-center justify-content-between h-100">
 
-        {{-- Logo --}}
+        {{-- Logo & Nom --}}
         <a href="{{ route('client.dashboard') }}" class="navbar-brand text-decoration-none">
-            <div class="brand-icon"></div>
-            <span>Denis Shop</span>
+            <img src="{{ asset('image/logof.png') }}" alt="Vohitsoa Logo" class="brand-logo-img">
+            <span>Vohitsoa Shop</span>
         </a>
 
         {{-- Navigation --}}
         <nav class="d-none d-lg-block">
-            <ul class="nav gap-1">
-                <li class="nav-item">
-                    <a href="{{ route('client.dashboard') }}" class="nav-link">
-                        <i class="bi bi-grid"></i> Produits
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="{{ route('client.achat') }}" class="nav-link">
-                        <i class="bi bi-cart3"></i> Panier
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a href="#" class="nav-link">
-                        <i class="bi bi-bag-check"></i> Commandes
-                    </a>
-                </li>
-            </ul>
+            @auth('client')
+                <ul class="nav gap-1">
+                    <li class="nav-item">
+                        <a href="{{ route('client.dashboard') }}" class="nav-link {{ request()->routeIs('client.dashboard') ? 'active' : '' }}">
+                            <i class="bi bi-grid"></i> Produits
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('client.achat') }}" class="nav-link {{ request()->routeIs('client.achat') ? 'active' : '' }}">
+                            <i class="bi bi-cart3"></i> Panier
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{{ route('client.create') }}" class="nav-link">
+                            <i class="bi bi-bag-check"></i> Commandes
+                        </a>
+                    </li>
+                </ul>
+            @endauth
         </nav>
 
         {{-- Profil --}}
         <div class="dropdown">
-
             @auth('client')
                 <div class="profile-container" data-bs-toggle="dropdown" aria-expanded="false">
                     <div class="text-end d-none d-sm-block me-1">
@@ -182,19 +179,10 @@
                 </div>
 
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="bi bi-person"></i> Mon profil
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="bi bi-bag-check"></i> Mes commandes
-                        </a>
-                    </li>
+                    <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Mon profil</a></li>
+                    <li><a class="dropdown-item" href="{"><i class="bi bi-bag-check"></i> Mes commandes</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li>
-                        {{-- ✅ Logout client --}}
                         <form method="POST" action="{{ route('client.logout') }}">
                             @csrf
                             <button type="submit" class="dropdown-item text-danger">
@@ -206,21 +194,16 @@
             @endauth
 
             @guest('client')
-                {{-- 🔒 Non connecté --}}
-                <button class="btn btn-primary btn-sm"
-                        data-bs-toggle="modal"
-                        data-bs-target="#authModal">
-                    <i class="bi bi-person me-1"></i>S'inscrire / Se connecter
+                <button class="btn btn-primary btn-sm px-3 rounded-pill" data-bs-toggle="modal" data-bs-target="#authModal">
+                    <i class="bi bi-person-plus me-1"></i> Connexion
                 </button>
             @endguest
-
         </div>
     </div>
 </header>
 
 <main class="main-wrapper container">
-
-    {{-- Flash success --}}
+    {{-- Notifications --}}
     @if(session('success'))
         <div class="alert alert-success d-flex align-items-center shadow-sm mb-4">
             <i class="bi bi-check-circle-fill me-2"></i>
@@ -228,20 +211,15 @@
         </div>
     @endif
 
-    {{-- Flash erreurs --}}
     @if($errors->any())
         <div class="alert alert-danger shadow-sm mb-4">
             <ul class="mb-0">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
+                @foreach($errors->all() as $error) <li>{{ $error }}</li> @endforeach
             </ul>
         </div>
     @endif
 
-    {{-- Contenu --}}
     @yield('content')
-
 </main>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>

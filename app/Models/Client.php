@@ -19,6 +19,9 @@ class Client extends Authenticatable
         'adresse',
         'ville',
         'password',
+        'verification_code',
+        'code_expires_at',
+        'is_verified',
     ];
 
     protected $hidden = [

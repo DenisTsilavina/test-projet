@@ -25,15 +25,12 @@
                         </div>
 
                         <div class="col-md-4 text-md-end mt-3 mt-md-0">
-                            {{-- Bouton S'inscrire --}}
                             <button class="btn btn-light fw-semibold me-2"
                                     data-bs-toggle="modal"
                                     data-bs-target="#authModal"
-                                    id="btn-open-register"
                                     onclick="openTab('pane-register')">
                                 <i class="bi bi-person-plus me-1"></i>S'inscrire
                             </button>
-                            {{-- Bouton Se connecter --}}
                             <button class="btn btn-outline-light fw-semibold"
                                     data-bs-toggle="modal"
                                     data-bs-target="#authModal"
@@ -46,89 +43,6 @@
                 </div>
             </div>
         @endguest
-
-        @auth('client')
-            {{-- ✅ Connecté — Carte informations --}}
-            <div class="card border-primary shadow-sm" style="border-radius: 16px;">
-                <div class="card-header bg-primary text-white fw-semibold">
-                    <i class="bi bi-person-fill me-1"></i>
-                    Bonjour, {{ Auth::guard('client')->user()->prenom }} {{ Auth::guard('client')->user()->nom }} !
-                </div>
-                <form action="{{ route('client.createNewClient') }}" method="POST">
-                    @csrf
-                    <div class="card-body">
-                        <div class="row g-3">
-
-                            {{-- NOM --}}
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">Nom</label>
-                                <input type="text" class="form-control bg-light"
-                                       value="{{ Auth::guard('client')->user()->nom }}" disabled>
-                            </div>
-
-                            {{-- PRENOM --}}
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">Prénom</label>
-                                <input type="text" class="form-control bg-light"
-                                       value="{{ Auth::guard('client')->user()->prenom }}" disabled>
-                            </div>
-
-                            {{-- PHONE --}}
-                            <div class="col-md-4">
-                                <label class="form-label fw-semibold">Téléphone</label>
-                                <input type="text" class="form-control bg-light"
-                                       value="{{ Auth::guard('client')->user()->phone }}" disabled>
-                            </div>
-
-                            {{-- ADRESSE --}}
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Adresse</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-geo-alt"></i></span>
-                                    <input type="text" name="adresse"
-                                           class="form-control @error('adresse') is-invalid @enderror"
-                                           value="{{ old('adresse', Auth::guard('client')->user()->adresse) }}"
-                                           placeholder="Adresse de livraison">
-                                </div>
-                                @error('adresse')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            {{-- VILLE --}}
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold">Ville</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-building"></i></span>
-                                    <input type="text" name="ville"
-                                           class="form-control @error('ville') is-invalid @enderror"
-                                           value="{{ old('ville', Auth::guard('client')->user()->ville) }}"
-                                           placeholder="Ville de livraison">
-                                </div>
-                                @error('ville')
-                                <div class="text-danger small mt-1">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                        </div>
-
-                        <div class="d-flex gap-2 mt-3">
-                            <button type="submit" class="btn btn-primary flex-grow-1">
-                                <i class="bi bi-check-circle me-1"></i>Enregistrer la commande
-                            </button>
-                            {{-- Logout client --}}
-                            <form action="{{ route('client.logout') }}" method="POST" class="m-0">
-                                @csrf
-                                <button type="submit" class="btn btn-outline-danger">
-                                    <i class="bi bi-box-arrow-right me-1"></i>Déconnexion
-                                </button>
-                            </form>
-                        </div>
-
-                    </div>
-                </form>
-            </div>
-        @endauth
 
     </div>
     {{-- ================= FIN AUTH / INFO ================= --}}
@@ -170,6 +84,14 @@
                     {{-- ===== INSCRIPTION ===== --}}
                     <div class="tab-pane fade show active" id="pane-register">
 
+                        {{-- Message de succès (ex: après vérification) --}}
+                        @if(session('success'))
+                            <div class="alert alert-success py-2 mb-3">
+                                <i class="bi bi-check-circle me-1"></i>{{ session('success') }}
+                            </div>
+                        @endif
+
+                        {{-- Message d'info générique --}}
                         @if(session('message'))
                             <div class="alert alert-info py-2 mb-3">
                                 <i class="bi bi-info-circle me-1"></i>{{ session('message') }}
@@ -264,43 +186,18 @@
                                     @enderror
                                 </div>
 
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Mot de passe</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                                        <input type="password" name="password"
-                                               id="reg-password"
-                                               class="form-control @error('password') is-invalid @enderror"
-                                               placeholder="Minimum 8 caractères" required>
-                                        <button class="btn btn-outline-secondary" type="button"
-                                                onclick="togglePwd('reg-password','icon-reg-pwd')">
-                                            <i class="bi bi-eye" id="icon-reg-pwd"></i>
-                                        </button>
-                                    </div>
-                                    @error('password')
-                                    <div class="text-danger small mt-1">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <div class="col-md-6">
-                                    <label class="form-label fw-semibold">Confirmer</label>
-                                    <div class="input-group">
-                                        <span class="input-group-text"><i class="bi bi-lock-fill"></i></span>
-                                        <input type="password" name="password_confirmation"
-                                               id="reg-confirm"
-                                               class="form-control"
-                                               placeholder="Répétez le mot de passe" required>
-                                        <button class="btn btn-outline-secondary" type="button"
-                                                onclick="togglePwd('reg-confirm','icon-reg-confirm')">
-                                            <i class="bi bi-eye" id="icon-reg-confirm"></i>
-                                        </button>
-                                    </div>
-                                </div>
+                                {{--
+                                    CHAMPS MOT DE PASSE RETIRÉS de la blade :
+                                    Le contrôleur génère un code aléatoire comme mot de passe initial.
+                                    L'utilisateur n'en choisit pas un à l'inscription —
+                                    il se connectera avec le code envoyé par email.
+                                    Ces champs ne servent donc à rien ici et ont été supprimés.
+                                --}}
 
                             </div>
 
                             <button type="submit" class="btn btn-primary w-100 mt-4">
-                                <i class="bi bi-check-circle me-1"></i>Créer mon compte
+                                <i class="bi bi-send me-1"></i>Recevoir mon code de vérification
                             </button>
                         </form>
                     </div>
@@ -308,6 +205,12 @@
                     {{-- ===== CONNEXION ===== --}}
                     <div class="tab-pane fade" id="pane-login">
 
+                        {{--
+                            CORRECTION : session('login_error') correspond bien au contrôleur.
+                            La clé 'show_register_modal' dans le contrôleur était mal orthographiée
+                            ('show_reistre_modal') — à corriger dans ClientAuthController::login()
+                            pour que l'ouverture automatique du modal fonctionne après erreur login.
+                        --}}
                         @if(session('login_error'))
                             <div class="alert alert-danger py-2 mb-3">
                                 <i class="bi bi-exclamation-circle me-1"></i>{{ session('login_error') }}
@@ -323,10 +226,13 @@
                                     <div class="input-group">
                                         <span class="input-group-text"><i class="bi bi-envelope"></i></span>
                                         <input type="email" name="email"
-                                               class="form-control"
+                                               class="form-control @error('email') is-invalid @enderror"
                                                value="{{ old('email') }}"
                                                placeholder="exemple@mail.com" required>
                                     </div>
+                                    @error('email')
+                                    <div class="text-danger small mt-1">{{ $message }}</div>
+                                    @enderror
                                 </div>
 
                                 <div class="col-12">
@@ -384,27 +290,31 @@
             }
         }
 
-        // Ouvrir un onglet spécifique du modal
         function openTab(paneId) {
+            // Légère attente pour laisser Bootstrap initialiser le modal
             setTimeout(() => {
                 const tab = document.querySelector(`[data-bs-target="#${paneId}"]`);
                 if (tab) tab.click();
-            }, 100);
+            }, 150);
         }
 
         document.addEventListener('DOMContentLoaded', function () {
             const modalEl = document.getElementById('authModal');
-            const modal   = new bootstrap.Modal(modalEl);
+            const modal   = bootstrap.Modal.getOrCreate(modalEl);
 
-            @if($errors->any())
-            modal.show(); // erreur inscription
+            {{-- Erreurs de validation inscription → ouvre le modal sur l'onglet inscription --}}
+            @if($errors->any() && !session('login_error'))
+            modal.show();
+            {{-- L'onglet "register" est actif par défaut, rien à faire --}}
             @endif
 
+            {{-- Erreur de connexion → ouvre le modal directement sur l'onglet connexion --}}
             @if(session('login_error'))
             modal.show();
-            openTab('pane-login'); // erreur login → onglet connexion
+            openTab('pane-login');
             @endif
 
+            {{-- Cas générique : forcer l'ouverture du modal (ex: redirect après inscription) --}}
             @if(session('show_register_modal'))
             modal.show();
             @endif

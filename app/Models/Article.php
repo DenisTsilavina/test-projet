@@ -8,20 +8,22 @@ use Illuminate\Database\Eloquent\Model;
 class Article extends Model
 {
     use HasFactory;
-
     protected $fillable = [
-        'name',
-        'total_prd_finit',
-        'note',
+    'user_id',
+    'name',
+    'total_prd_finit',
+    'note',
     ];
 
-    public function ingredients()
+    // relation utilisateur
+    public function user()
     {
-        return $this->hasMany(Ingredient::class, 'article_id', 'id');
+        return $this->belongsTo(User::class);
     }
 
-    public function commandes()
+    // relation ingredients
+    public function ingredients()
     {
-        return $this->hasMany(Commande::class, 'article_id', 'id');
+        return $this->hasMany(Ingredient::class);
     }
 }

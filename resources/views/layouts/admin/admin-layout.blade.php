@@ -244,9 +244,8 @@
                     </div>
                 </div>
 
-                <a href="{{ route('admin.commandes.index') }}"
-                   class="nav-link {{ request()->routeIs('admin.commandes.*') ? 'active' : '' }}">
-                    <i class="bi bi-bag-check"></i> Commandes
+                <a href="{{ route('admin.article.create') }}">
+                    <i class="bi bi-bag-check"></i> Nouvelle article
                 </a>
             @else
                 <a href="{{ route('dashboard') }}" class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">

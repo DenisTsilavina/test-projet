@@ -28,7 +28,6 @@
             </div>
         @endif
 
-        {{-- ✅ Action dynamique selon le guard --}}
         <form method="POST" action="{{ $actionRoute }}" id="vente-form">
             @csrf
 
@@ -46,15 +45,15 @@
                                         <div class="d-flex justify-content-between align-items-start mb-2">
                                             <span class="badge bg-soft-primary small">{{ $stock->name_stock }}</span>
                                             <span class="badge {{ $description->effectif > 5 ? 'bg-success' : 'bg-danger' }}">
-                                            {{ $description->effectif }} dispos
-                                        </span>
+                                                {{ $description->effectif }} dispos
+                                            </span>
                                         </div>
                                         <h6 class="fw-bold mb-1">{{ $description->description }}</h6>
                                         <p class="text-muted small mb-2">{{ $sous->stock_categorie }}</p>
                                         <div class="d-flex justify-content-between align-items-center mt-auto pt-2 border-top">
-                                        <span class="fw-bold text-dark">
-                                            {{ number_format($sous->prix_vente, 0, ',', ' ') }} Ar
-                                        </span>
+                                            <span class="fw-bold text-dark">
+                                                {{ number_format($sous->prix_vente, 0, ',', ' ') }} Ar
+                                            </span>
                                             <button type="button"
                                                     id="btn-add-{{ $sous->id }}"
                                                     class="btn btn-primary btn-sm rounded-circle add-to-sale"
@@ -122,6 +121,56 @@
             </div>
         </form>
 
+        {{-- ══ MODAL CHOIX UNITÉ ══ --}}
+        {{-- ══ MODAL CHOIX UNITÉ ══ --}}
+        <div class="modal fade" id="modalUnite" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-primary text-white">
+                        <h5 class="modal-title">
+                            <i class="bi bi-rulers me-2"></i>Choisir l'unité
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white"
+                                data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="text-muted mb-1">Produit :</p>
+                        <h6 class="fw-bold mb-3" id="modal-unite-produit-name"></h6>
+
+                        <label class="form-label fw-semibold">
+                            Unité de mesure <span class="text-danger">*</span>
+                        </label>
+                        <div id="modal-unite-options" class="d-flex flex-wrap gap-2 mt-2"></div>
+                        <div id="modal-unite-error" class="text-danger small mt-2" style="display:none">
+                            Veuillez choisir une unité.
+                        </div>
+
+                        {{-- ✅ NOUVEAU : affichage prix --}}
+                        <div id="modal-prix-box" class="mt-4 p-3 rounded-3 border bg-light" style="display:none">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span class="text-muted small">Prix unitaire</span>
+                                <span class="fw-bold fs-5 text-primary" id="modal-prix-unitaire">—</span>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mt-1">
+                                <span class="text-muted small">Stock disponible</span>
+                                <span class="fw-bold" id="modal-stock-dispo">—</span>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary"
+                                data-bs-dismiss="modal">Annuler</button>
+                        <button type="button" class="btn btn-primary fw-bold"
+                                id="btn-confirm-unite">
+                            <i class="bi bi-check-circle me-1"></i> Confirmer
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{-- ══ FIN MODAL UNITÉ ══ --}}
+
         {{-- ══ MODAL CLIENT ══ --}}
         <div class="modal fade" id="modalClient" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -136,9 +185,7 @@
                     <div class="modal-body">
 
                         @if($isClient)
-                            {{-- ✅ CLIENT : champs pré-remplis depuis la BDD --}}
                             @php $clientAuth = Auth::guard('client')->user(); @endphp
-
                             <div class="mb-3">
                                 <label class="form-label fw-semibold">Nom complet</label>
                                 <input class="form-control bg-light"
@@ -163,13 +210,9 @@
                                        class="form-control bg-light"
                                        value="{{ $clientAuth->ville }}" readonly>
                             </div>
-
                         @else
-                            {{-- ✅ ADMIN / USER : saisie manuelle --}}
                             <div class="mb-3">
-                                <label class="form-label fw-semibold">
-                                    Vendeur
-                                </label>
+                                <label class="form-label fw-semibold">Vendeur</label>
                                 <input class="form-control bg-light"
                                        value="{{ Auth::user()->name }}" disabled>
                             </div>
@@ -199,7 +242,6 @@
                             </div>
                         @endif
 
-                        {{-- Mode de paiement — commun aux deux --}}
                         <div class="mb-3">
                             <label class="form-label fw-semibold">
                                 Mode de paiement <span class="text-danger">*</span>
@@ -226,17 +268,23 @@
                 </div>
             </div>
         </div>
-        {{-- ══ FIN MODAL ══ --}}
+        {{-- ══ FIN MODAL CLIENT ══ --}}
 
     </div>
 @endsection
 
 @push('scripts')
     <script>
-        const UNITES    = {!! json_encode($unites ?? []) !!};
+
+
+        const UNITES = {!! json_encode($unites ?? []) !!};
         const IS_CLIENT = {{ $isClient ? 'true' : 'false' }};
 
         let rowIndex = 0;
+        let pendingProduct = null;
+        let selectedUnite  = null;
+
+        const modalUnite = new bootstrap.Modal(document.getElementById('modalUnite'));
 
         // ════════════════════════════════════════════
         // TOTAL GÉNÉRAL
@@ -253,26 +301,49 @@
         }
 
         // ════════════════════════════════════════════
+        // AFFICHER PRIX DANS LE MODAL
+        // ════════════════════════════════════════════
+        function afficherPrixModal(unite) {
+            const d = pendingProduct;
+            const factorStock = parseFloat(d.uniteFactor);
+            const prixStock = parseFloat(d.prix);
+            const effectif = parseFloat(d.stockDispo);
+            const factorAchat = parseFloat(unite.factor);
+
+            const prixParBase = prixStock / factorStock;
+            const prixUnitaire = prixParBase * factorAchat;
+            const stockBase = effectif * factorStock;
+            const stockEnUniteChoisie = stockBase / factorAchat;
+
+            const box = document.getElementById('modal-prix-box');
+            box.style.display = 'block';
+
+            document.getElementById('modal-prix-unitaire').textContent =
+                prixUnitaire.toLocaleString('fr-MG', { minimumFractionDigits: 0 }) + ' Ar / ' + unite.symbol;
+
+            document.getElementById('modal-stock-dispo').textContent =
+                stockEnUniteChoisie.toLocaleString('fr-MG', { minimumFractionDigits: 2 }) + ' ' + unite.symbol;
+        }
+
+        // ════════════════════════════════════════════
         // CALCUL D'UNE LIGNE
         // ════════════════════════════════════════════
         function calculerLigne(tr) {
-            const type        = tr.dataset.uniteType;
-            const effectif    = parseFloat(tr.dataset.effectif);
+            const effectif = parseFloat(tr.dataset.effectif);
             const factorStock = parseFloat(tr.dataset.factorStock);
-            const prixStock   = parseFloat(tr.dataset.prixStock);
+            const prixStock = parseFloat(tr.dataset.prixStock);
+            const factorAchat = parseFloat(tr.dataset.selectedFactor || factorStock);
+            const uniteSymbol = tr.dataset.uniteSymbol;
 
-            const qtyInput   = tr.querySelector('.qty-input');
-            const quantite   = parseFloat(qtyInput.value) || 0;
-            const uniteSelect = tr.querySelector('.unite-select');
+            const qtyInput = tr.querySelector('.qty-input');
+            const quantite = parseFloat(qtyInput.value) || 0;
 
-            const hiddenQty   = tr.querySelector('.hidden-quantite');
-            const hiddenUnite = tr.querySelector('.hidden-unite');
+            const hiddenQty = tr.querySelector('.hidden-quantite');
             const prixDisplay  = tr.querySelector('.prix-display');
             const totalDisplay = tr.querySelector('.total-display');
 
             if (hiddenQty) hiddenQty.value = quantite;
 
-            // ── Reset si vide ──
             if (quantite <= 0) {
                 prixDisplay.textContent  = '—';
                 totalDisplay.textContent = '0 Ar';
@@ -282,32 +353,11 @@
                 return;
             }
 
-            let prixUnitaire = 0;
-            let total        = 0;
-            let insuffisant  = false;
+            // Unité de base : stock total et quantité achetée
+            const stockBase = effectif * factorStock;
+            const achatBase = quantite * factorAchat;
 
-            // ── CAS 1 : UNIT (pcs) ──
-            if (type === 'unit') {
-                insuffisant  = quantite > effectif;
-                prixUnitaire = prixStock;
-                total        = quantite * prixUnitaire;
-
-                // ── CAS 2 : MASSE / VOLUME ──
-            } else {
-                const factorAchat = uniteSelect
-                    ? parseFloat(uniteSelect.selectedOptions[0]?.dataset.factor || factorStock)
-                    : factorStock;
-
-                const stockBase = effectif * factorStock;
-                const achatBase = quantite * factorAchat;
-
-                insuffisant  = achatBase > stockBase;
-                prixUnitaire = prixStock / stockBase;
-                total        = achatBase * prixUnitaire;
-            }
-
-            // ── Stock insuffisant ──
-            if (insuffisant) {
+            if (achatBase > stockBase) {
                 prixDisplay.textContent  = '—';
                 totalDisplay.textContent = '⚠ Stock insuffisant';
                 totalDisplay.classList.add('text-danger');
@@ -316,105 +366,151 @@
                 return;
             }
 
-            // ── Affichage final ──
-            const uniteSymbol = uniteSelect
-                ? uniteSelect.selectedOptions[0]?.dataset.symbol || ''
-                : tr.dataset.uniteSymbol;
+            const prixParBase  = prixStock / factorStock;
+            const prixUnitaire = prixParBase * factorAchat;
+            const total = quantite * prixUnitaire;
 
             totalDisplay.classList.remove('text-danger');
             prixDisplay.textContent  = prixUnitaire.toLocaleString('fr-MG', { minimumFractionDigits: 2 }) + ' Ar / ' + uniteSymbol;
             totalDisplay.textContent = total.toLocaleString('fr-MG', { minimumFractionDigits: 0 }) + ' Ar';
-            tr.dataset.total         = total;
-
-            if (uniteSelect && hiddenUnite) hiddenUnite.value = uniteSelect.value;
+            tr.dataset.total = total;
 
             updateGrandTotal();
         }
 
         // ════════════════════════════════════════════
-        // AJOUT D'UN PRODUIT AU PANIER
+        // CLIC SUR + → OUVRIR MODAL UNITÉ
         // ════════════════════════════════════════════
         document.querySelectorAll('.add-to-sale').forEach(btn => {
             btn.addEventListener('click', function (e) {
                 e.stopPropagation();
 
-                const d    = this.dataset;
+                const d = this.dataset;
                 const type = d.uniteType;
 
                 const unitesCompatibles = UNITES.filter(u => u.type === type);
-                const optionsHtml = unitesCompatibles
-                    .map(u => `<option value="${u.id}" data-factor="${u.factor}" data-symbol="${u.symbol}">${u.symbol}</option>`)
-                    .join('');
 
-                document.getElementById('empty-row').style.display = 'none';
+                pendingProduct = d;
+                selectedUnite = null;
 
-                const tr = document.createElement('tr');
-                tr.dataset.row        = rowIndex;
-                tr.dataset.uniteType  = type;
-                tr.dataset.effectif   = d.stockDispo;
-                tr.dataset.factorStock = d.uniteFactor;
-                tr.dataset.prixStock  = d.prix;
-                tr.dataset.total      = 0;
-                tr.dataset.uniteId    = d.uniteId;
-                tr.dataset.uniteSymbol = d.uniteSymbol;
+                document.getElementById('modal-unite-produit-name').textContent =
+                    d.name + ' — ' + d.sousNom;
 
-                const uniteCol = type === 'unit'
-                    ? `<span class="text-muted small">${d.uniteSymbol}</span>
-                   <input type="hidden" name="ventes[${rowIndex}][unite_id]" class="hidden-unite" value="${d.uniteId}">`
-                    : `<select class="form-select form-select-sm unite-select">${optionsHtml}</select>
-                   <input type="hidden" name="ventes[${rowIndex}][unite_id]" class="hidden-unite" value="${d.uniteId}">`;
+                const container = document.getElementById('modal-unite-options');
+                container.innerHTML = '';
+                document.getElementById('modal-unite-error').style.display  = 'none';
+                document.getElementById('modal-prix-box').style.display = 'none';
 
-                tr.innerHTML = `
-                <td><small class="fw-bold">${d.name}</small></td>
-                <td><small>${d.sousNom}</small></td>
-                <td>
-                    <span class="badge bg-light text-dark">${d.stockName}</span><br>
-                    <small class="text-muted">Dispo : ${d.stockDispo} ${d.uniteSymbol}</small>
-                </td>
-                <td>
-                    <input type="number" class="form-control form-control-sm qty-input"
-                           min="0.01" step="any" placeholder="Qté">
-                    <input type="hidden" name="ventes[${rowIndex}][quantite]"       class="hidden-quantite" value="">
-                    <input type="hidden" name="ventes[${rowIndex}][stock_id]"       value="${d.stock}">
-                    <input type="hidden" name="ventes[${rowIndex}][description_id]" value="${d.description}">
-                    <input type="hidden" name="ventes[${rowIndex}][categorie_id]"   value="${d.categorie}">
-                </td>
-                <td>${uniteCol}</td>
-                <td class="prix-display text-muted small">—</td>
-                <td class="total-display fw-bold">0 Ar</td>
-                <td>
-                    <button type="button" class="btn btn-outline-danger btn-sm btn-remove">×</button>
-                </td>
-            `;
+                unitesCompatibles.forEach((u, i) => {
+                    const optBtn = document.createElement('button');
+                    optBtn.type = 'button';
+                    optBtn.className = 'btn btn-outline-primary px-4 py-2 unite-option-btn';
+                    optBtn.dataset.id = u.id;
+                    optBtn.dataset.factor = u.factor;
+                    optBtn.dataset.symbol = u.symbol;
+                    optBtn.textContent = u.symbol;
 
-                document.getElementById('sale-list').appendChild(tr);
-
-                tr.querySelector('.hidden-unite').value = d.uniteId;
-                tr.querySelector('.qty-input').addEventListener('input', () => calculerLigne(tr));
-
-                const sel = tr.querySelector('.unite-select');
-                if (sel) {
-                    sel.addEventListener('change', () => {
-                        tr.querySelector('.hidden-unite').value = sel.value;
-                        calculerLigne(tr);
-                    });
-                }
-
-                tr.querySelector('.btn-remove').addEventListener('click', () => {
-                    tr.remove();
-                    if (!document.querySelectorAll('#sale-list tr[data-row]').length) {
-                        document.getElementById('empty-row').style.display = '';
+                    // Présélectionner le premier
+                    if (i === 0) {
+                        optBtn.classList.add('active', 'btn-primary');
+                        optBtn.classList.remove('btn-outline-primary');
+                        selectedUnite = { id: u.id, factor: u.factor, symbol: u.symbol };
+                        afficherPrixModal(selectedUnite);
                     }
-                    updateGrandTotal();
+
+                    optBtn.addEventListener('click', function () {
+                        container.querySelectorAll('.unite-option-btn').forEach(b => {
+                            b.classList.remove('active', 'btn-primary');
+                            b.classList.add('btn-outline-primary');
+                        });
+                        this.classList.add('active', 'btn-primary');
+                        this.classList.remove('btn-outline-primary');
+                        selectedUnite = {
+                            id: this.dataset.id,
+                            factor: this.dataset.factor,
+                            symbol: this.dataset.symbol,
+                        };
+                        document.getElementById('modal-unite-error').style.display = 'none';
+                        afficherPrixModal(selectedUnite);
+                    });
+
+                    container.appendChild(optBtn);
                 });
 
-                rowIndex++;
-                updateGrandTotal();
+                modalUnite.show();
             });
         });
 
         // ════════════════════════════════════════════
-        // MODAL — reset classes invalides à l'ouverture
+        // CONFIRMER UNITÉ → AJOUTER AU PANIER
+        // ════════════════════════════════════════════
+        document.getElementById('btn-confirm-unite').addEventListener('click', function () {
+            if (!selectedUnite) {
+                document.getElementById('modal-unite-error').style.display = 'block';
+                return;
+            }
+
+            modalUnite.hide();
+
+            const d = pendingProduct;
+
+            document.getElementById('empty-row').style.display = 'none';
+
+            const tr = document.createElement('tr');
+            tr.dataset.row = rowIndex;
+            tr.dataset.uniteType = d.uniteType;
+            tr.dataset.effectif = d.stockDispo;
+            tr.dataset.factorStock = d.uniteFactor;
+            tr.dataset.selectedFactor = selectedUnite.factor;
+            tr.dataset.prixStock = d.prix;
+            tr.dataset.total = 0;
+            tr.dataset.uniteId = selectedUnite.id;
+            tr.dataset.uniteSymbol = selectedUnite.symbol;
+
+            tr.innerHTML = `
+        <td><small class="fw-bold">${d.name}</small></td>
+        <td><small>${d.sousNom}</small></td>
+        <td>
+            <span class="badge bg-light text-dark">${d.stockName}</span><br>
+            <small class="text-muted">Dispo : ${d.stockDispo} ${d.uniteSymbol}</small>
+        </td>
+        <td>
+            <input type="number" class="form-control form-control-sm qty-input"
+                   min="0.01" step="any" placeholder="Qté">
+            <input type="hidden" name="ventes[${rowIndex}][quantite]"       class="hidden-quantite" value="">
+            <input type="hidden" name="ventes[${rowIndex}][unite_id]"       class="hidden-unite"    value="${selectedUnite.id}">
+            <input type="hidden" name="ventes[${rowIndex}][stock_id]"       value="${d.stock}">
+            <input type="hidden" name="ventes[${rowIndex}][description_id]" value="${d.description}">
+            <input type="hidden" name="ventes[${rowIndex}][categorie_id]"   value="${d.categorie}">
+        </td>
+        <td>
+            <span class="badge bg-soft-primary px-3 py-2 fs-6">${selectedUnite.symbol}</span>
+        </td>
+        <td class="prix-display text-muted small">—</td>
+        <td class="total-display fw-bold">0 Ar</td>
+        <td>
+            <button type="button" class="btn btn-outline-danger btn-sm btn-remove">×</button>
+        </td>
+        `;
+
+            document.getElementById('sale-list').appendChild(tr);
+
+            tr.querySelector('.qty-input').addEventListener('input', () => calculerLigne(tr));
+
+            tr.querySelector('.btn-remove').addEventListener('click', () => {
+                tr.remove();
+                if (!document.querySelectorAll('#sale-list tr[data-row]').length) {
+                    document.getElementById('empty-row').style.display = '';
+                }
+                updateGrandTotal();
+            });
+
+            rowIndex++;
+            updateGrandTotal();
+        });
+
+        // ════════════════════════════════════════════
+        // MODAL CLIENT — reset classes invalides
         // ════════════════════════════════════════════
         document.getElementById('modalClient').addEventListener('show.bs.modal', function () {
             ['client_telephone', 'client_ville', 'mode_paiement'].forEach(id => {
@@ -427,13 +523,12 @@
         // ════════════════════════════════════════════
         document.getElementById('btn-confirm-vente').addEventListener('click', function () {
             const telephone = document.getElementById('client_telephone');
-            const adresse   = document.getElementById('client_adresse');
-            const ville     = document.getElementById('client_ville');
-            const paiement  = document.getElementById('mode_paiement');
+            const adresse = document.getElementById('client_adresse');
+            const ville = document.getElementById('client_ville');
+            const paiement = document.getElementById('mode_paiement');
 
             let valid = true;
 
-            // Validation téléphone + ville uniquement pour admin/user
             if (!IS_CLIENT) {
                 if (!telephone.value.trim()) {
                     telephone.classList.add('is-invalid'); valid = false;
@@ -447,7 +542,6 @@
                 }
             }
 
-            // Mode de paiement — obligatoire pour tous
             if (!paiement.value) {
                 paiement.classList.add('is-invalid'); valid = false;
             } else {
@@ -461,16 +555,16 @@
 
             const addHidden = (name, value) => {
                 const inp = document.createElement('input');
-                inp.type  = 'hidden';
-                inp.name  = name;
+                inp.type = 'hidden';
+                inp.name = name;
                 inp.value = value;
                 inp.classList.add('injected-client');
                 form.appendChild(inp);
             };
 
-            addHidden('phone',         telephone.value.trim());
-            addHidden('address',       adresse.value.trim());
-            addHidden('ville',         ville.value.trim());
+            addHidden('phone', telephone.value.trim());
+            addHidden('address', adresse.value.trim());
+            addHidden('ville', ville.value.trim());
             addHidden('mode_paiement', paiement.value);
 
             form.submit();

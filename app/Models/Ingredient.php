@@ -8,15 +8,28 @@ use Illuminate\Database\Eloquent\Model;
 class Ingredient extends Model
 {
     use HasFactory;
-
     protected $fillable = [
+        'article_id',
         'description_id',
-        'effectif',
         'unite_id',
+        'effectif',
     ];
 
-    public function articles()
+    // relation article
+    public function article()
     {
-        return $this->belongsTo(Article::class, 'article_id', 'id');
+        return $this->belongsTo(Article::class);
+    }
+
+    // relation description
+    public function description()
+    {
+        return $this->belongsTo(Description::class);
+    }
+
+    // relation unite
+    public function unite()
+    {
+        return $this->belongsTo(Unite::class);
     }
 }

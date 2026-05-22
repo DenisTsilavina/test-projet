@@ -20,15 +20,20 @@ class ClientController extends Controller
     public function index()
     {
          $client = Client::all();
-         return view('client.dashboard', compact('client'));
+         $unites = Unite::all();
+         return view('client.dashboard', compact('client','unites'));
     }
 
-    public function achat( ){
-        $stocks= Stock::all();
-        $descriptions = Description::where('effectif', '>', 0)->get();
-        $categories  = SousCategory::all();
+    public function achat()
+    {
+        $stocks = Stock::all();
+        $descriptions = Description::with('unite', 'sousCategories')
+            ->where('effectif', '>', 0)
+            ->get();
+        $categories = SousCategory::all();
         $unites = Unite::all();
-        return view('client.achat', compact('stocks', 'descriptions', 'categories'));
+
+        return view('client.achat', compact('stocks', 'descriptions', 'categories', 'unites'));
     }
 
 
@@ -99,15 +104,16 @@ class ClientController extends Controller
             'status' => Commande::STATUS_PENDING,
         ]));
 
-        auth()->user()->notify(new CommandeStatusNotification($commande));
+       /* auth()->user()->notify(new CommandeStatusNotification($commande));
 
         return redirect()
             ->route('commande.mecommande')
             ->with('success', 'Votre commande a bien été lancée !'
-        );
+        );*/
     }
     public function store(Request $request)
     {
+        // ── 1. Validation de base ─────────────────────────────────
         $request->validate([
             'ventes' => ['required', 'array', 'min:1'],
             'ventes.*.stock_id' => ['required', 'integer', 'exists:stocks,id'],
@@ -125,35 +131,33 @@ class ClientController extends Controller
             'mode_paiement.required' => 'Le mode de paiement est obligatoire.',
         ]);
 
-        // ── Résolution du client ──────────────────────────
-        $clientId = null;
-        $clientAnonId = null;
+        // ── 2. Résolution Client / Vendeur ────────────────────────
         $vendeurId = null;
+        $clientAnonId = null;
 
         if (Auth::guard('client')->check()) {
-            // 🔵 Client connecté
-            $clientGuard  = Auth::guard('client')->user();
-            $clientAnonId = $clientGuard->id;
+            $clientAnonId = Auth::guard('client')->id();
 
         } elseif (Auth::check()) {
-            // 🟢 Admin / User connecté → saisie manuelle du client
             $vendeurId = Auth::id();
 
+            $request->validate([
+                'phone' => ['required', 'string', 'max:20'],
+                'ville' => ['required', 'string', 'max:100'],
+            ]);
+
             $client = Client::firstOrCreate(
-                ['phone' => $request->phone],
-                [
-                    'adresse' => $request->address,
-                    'ville' => $request->ville,
-                    'nom' => 'Anonyme',
-                    'prenom' => '',
-                    'email' => $request->phone . '@anon.local',
-                    'password' => bcrypt(\Str::random(16)),
-                ]
+                ['telephone' => $request->phone],
+                ['adresse' => $request->address ?? '', 'ville' => $request->ville]
             );
+
             $clientAnonId = $client->id;
+
+        } else {
+            return redirect()->route('login');
         }
 
-        // ── Transaction ──────────────────────────────────
+        // ── 3. Transaction ────────────────────────────────────────
         DB::beginTransaction();
 
         try {
@@ -161,52 +165,38 @@ class ClientController extends Controller
             $lignes = [];
 
             foreach ($request->ventes as $vente) {
-                $description = Description::with('unite')->findOrFail($vente['description_id']);
+                $description   = Description::with('unite')->findOrFail($vente['description_id']);
                 $sousCategorie = SousCategory::findOrFail($vente['categorie_id']);
-                $uniteChoisie = Unite::findOrFail($vente['unite_id']);
+                $uniteChoisie  = Unite::findOrFail($vente['unite_id']);
 
                 $quantite = (float) $vente['quantite'];
                 $prixStock = (float) $sousCategorie->prix_vente;
                 $effectif = (float) $description->effectif;
-                $type = $description->unite->type;
+                $factorStock = (float) $description->unite->factor;
+                $factorAchat = (float) $uniteChoisie->factor;
 
-                if ($type === 'unit') {
-                    $reste = $effectif - $quantite;
+                // Conversion en unité de base
+                $stockBase = $effectif * $factorStock;
+                $achatBase = $quantite * $factorAchat;
+                $resteBase = $stockBase - $achatBase;
 
-                    if ($reste < 0) {
-                        throw new \Exception(
-                            "Stock insuffisant pour « {$description->description} » "
-                            . "(demandé : {$quantite}, disponible : {$effectif})."
-                        );
-                    }
-
-                    $prixUnitaire = $prixStock;
-                    $total = $quantite * $prixUnitaire;
-
-                    $description->effectif = $reste;
-                    $description->save();
-
-                } else {
-                    $factorStock = (float) $description->unite->factor;
-                    $factorAchat = (float) $uniteChoisie->factor;
-                    $stockBase = $effectif * $factorStock;
-                    $achatBase = $quantite * $factorAchat;
-                    $resteBase = $stockBase - $achatBase;
-
-                    if ($resteBase < 0) {
-                        throw new \Exception(
-                            "Stock insuffisant pour « {$description->description} » "
-                            . "(demandé : {$achatBase}, disponible : {$stockBase} en unité de base)."
-                        );
-                    }
-
-                    $prixUnitaireBase = $prixStock / $stockBase;
-                    $total = $achatBase * $prixUnitaireBase;
-                    $prixUnitaire = $prixUnitaireBase;
-
-                    $description->effectif = $resteBase / $factorStock;
-                    $description->save();
+                if ($resteBase < 0) {
+                    throw new \Exception(
+                        "Stock insuffisant pour « {$description->description} » "
+                        . "(demandé : {$achatBase}, disponible : {$stockBase} en unité de base)."
+                    );
                 }
+
+                // Calcul du prix
+                $prixParBase = $stockBase > 0 ? $prixStock / $factorStock : 0;
+                $prixUnitaire = $prixParBase * $factorAchat;
+                $total = $quantite * $prixUnitaire;
+
+                // Mise à jour du stock
+                $description->effectif = $factorStock > 0
+                    ? $resteBase / $factorStock
+                    : $effectif - $quantite;
+                $description->save();
 
                 $totalGeneral += $total;
 
@@ -214,7 +204,7 @@ class ClientController extends Controller
                     'stock_id' => $vente['stock_id'],
                     'description_id' => $vente['description_id'],
                     'categorie_id' => $vente['categorie_id'],
-                    'unite_id' => $vente['unite_id'],
+                    'unite_id' => $uniteChoisie->id,
                     'quantite' => $quantite,
                     'unite_symbol' => $uniteChoisie->symbol,
                     'prix_unitaire' => round($prixUnitaire, 2),
@@ -224,33 +214,40 @@ class ClientController extends Controller
                 ];
             }
 
-            // ── Vente principale ──
+            // Vente principale
             $venteRecord = Vente::create([
                 'vendeur_id' => $vendeurId,
-                'client_id' => $clientId,
-                'client_anon_id' => $clientAnonId,
+                'client_anon_id'=> $clientAnonId,
                 'mode_paiement' => $request->mode_paiement,
                 'total_general' => round($totalGeneral, 2),
             ]);
 
-            // ── Lignes ──
+            // Lignes de vente
             foreach ($lignes as $ligne) {
                 LigneVente::create(array_merge($ligne, ['vente_id' => $venteRecord->id]));
             }
-
             DB::commit();
 
+            $route = Auth::guard('client')->check()
+                ? 'client.vente.recu'
+                : 'admin.vente.recu';
+
             return redirect()
-                ->route('vente.recu', $venteRecord->id)
-                ->with('success', 'Commande enregistrée avec succès !');
+                ->route($route, $venteRecord->id)
+                ->with('success', 'Vente enregistrée avec succès.');
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             return back()
                 ->withErrors(['stock' => $e->getMessage()])
                 ->withInput();
         }
+    }
+    public function recu(Vente $vente)
+    {
+        // ✅ Enlever 'client' si la relation n'existe pas
+        $vente->load(['lignes', 'clientAnon']);
+        return view('recu.vente', compact('vente'));
     }
 
 }

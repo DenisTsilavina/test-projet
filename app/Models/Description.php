@@ -35,4 +35,9 @@ class Description extends Model
     {
         return number_format($this->effectif, 2) . ' ' . $this->unit->symbol;
     }
+
+    public function ingredients()
+    {
+        return $this->hasMany(Ingredient::class);
+    }
 }

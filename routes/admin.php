@@ -51,6 +51,10 @@ Route::middleware(['auth'])->group(function () {
         Route::put('/description/{id}/update',
             [DescriptionController::class, 'update'])
             ->name('description.update');
+        Route::get('/admin/article/create', [UserController::class, 'showCreateForm'])->name('admin.article.create');
+
+        // Route POST pour traiter l'envoi du formulaire (celle utilisée dans le <form action="...">)
+        Route::post('/admin/article/store', [UserController::class, 'createArticles'])->name('admin.article.store');
     });
 
     // ========================

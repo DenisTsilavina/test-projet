@@ -1,4 +1,7 @@
-@extends('layouts.app')
+@extends('layouts.admin')
+
+@section('title', 'Stock')
+@section('page-title', 'Stocks ')
 @section('content')
     <div class="container mt-4">
         <div class="card">

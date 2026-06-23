@@ -1,86 +1,83 @@
 <?php
 
-use App\Http\Controllers\StockControllers;
+use App\Http\Controllers\StockControllers; // Attention au "s" à StockControllers, vérifiez le nom de votre fichier
 use App\Http\Controllers\DescriptionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VenteController;
 use Illuminate\Support\Facades\Route;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
-|
-*/
-
 Route::view('/', 'welcome');
 
-Route::view('dashboard',[UserController::class,'index'])
-    ->middleware(['auth', 'verified'])
-    ->name('dashboard');
-Route::get('/dashboard', [StockControllers::class, 'index'])
-    ->middleware(['auth'])
-    ->name('dashboard.redirect');
-
+// ─── Profil ───────────────────────────────────────────────────────────────────
 Route::view('profile', 'profile')
-    ->middleware(['auth'])
+    ->middleware('auth')
     ->name('profile');
 
 require __DIR__.'/auth.php';
 
-Auth::routes();
+// ─── Redirection post-login (selon rôle) ─────────────────────────────────────
+Route::get('/dashboard', [UserController::class, 'index'])
+    ->middleware(['auth', 'verified'])
+    ->name('dashboard');
 
-Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');
-
-//route pour les stocks
-Route::prefix('stock')->group(function () {
-    Route::get('/stocks', [StockControllers::class, 'index'])->name('stock.index');
-    Route::get('/stocks/create', [StockControllers::class, 'create'])->name('stock.create');
-    Route::post('/stocks', [StockControllers::class, 'createStock'])->name('stock.store');
-});
-
-
-Route::prefix('stock')->group(function () {
-    // Routes principales du Stock
-    //Route::get('/stocks', [DescriptionController::class, 'index'])->name('stock.index');
-    // Route pour créer une Description liée à un Stock
-    // L'ID du stock est passé dans l'URL
-    Route::post('/stock/description-complete/store/{id_stock}', [DescriptionController::class, 'store'])
-        ->name('description.store');
-
-    Route::get('/stock/create/description/{stock_id}', [DescriptionController::class, 'createdescription'])->name('description.create');
-    Route::delete('/description/{description}', [DescriptionController::class, 'destroy'])->name('description.destroy');
-});
-
- // Vente
-Route::prefix('admin')->name('admin.')->group(function () {
-
-    // Tableau de bord
-    Route::get('/vente/dashboard', [VenteController::class, 'dashboard'])
-        ->name('vente.dashboard');
-
-    // Liste / historique
-    Route::get('/vente', [VenteController::class, 'index'])
-        ->name('vente.index');
-
-    // Formulaire création
-    Route::get('/vente/create', [VenteController::class, 'create'])
-        ->name('vente.create');
-
-    // Enregistrer une vente
-    Route::post('/vente', [VenteController::class, 'store'])
-        ->name('vente.store');
-
-    // Supprimer une vente
-    Route::delete('/vente/{vente}', [VenteController::class, 'destroy'])
-        ->name('vente.destroy');
-
-    // Stock
-       // Route::get('/stock', [StockControllers::class, 'index'])
-        //->name('stock.index');
-
+// ─── Espace Client ────────────────────────────────────────────────────────────
+// Note : Vérifiez si votre middleware accepte les slugs 'client' au lieu de '0' pour plus de clarté
+Route::middleware(['auth', 'role:0'])
+    ->prefix('client')
+    ->name('client.')
+    ->group(function () {
+        Route::get('/dashboard', [UserController::class, 'clientDashboard'])->name('dashboard');
     });
+
+// ─── Espace Admin & Super Admin ───────────────────────────────────────────────
+Route::prefix('admin')
+    ->name('admin.')
+    ->middleware('auth') // Idéalement, appliquez un middleware global ici comme 'role:admin,super_admin'
+    ->group(function () {
+
+        // --- SECTION VENTES & DASHBOARD ---
+        // Remplacement de 'admin.dashboard' par 'admin.vente.dashboard' pour s'aligner sur le layout
+        Route::get('/dashboard', [UserController::class, 'adminDashboard'])->name('vente.dashboard');
+
+        Route::get('/vente',            [VenteController::class, 'index'])->name('vente.index');
+        Route::get('/vente/create',     [VenteController::class, 'create'])->name('vente.create');
+        Route::post('/vente',           [VenteController::class, 'store'])->name('vente.store');
+        Route::delete('/vente/{vente}', [VenteController::class, 'destroy'])->name('vente.destroy');
+
+        // --- SECTION SUPER ADMIN (Ajouté pour compléter le layout) ---
+        Route::middleware('role:super_admin')->group(function () {
+            Route::get('/super/dashboard', function () {
+                return view('admin.super.dashboard');
+            })->name('super.dashboard'); // Crée la route admin.super.dashboard demandée par le layout
+        });
+    });
+
+// ─── Gestion des Stocks (Indépendant ou partagé) ─────────────────────────────
+Route::prefix('stock')
+    ->middleware('auth')
+    ->name('stock.')
+    ->group(function () {
+
+        // Routes statiques AVANT les routes dynamiques
+        Route::get('/',              [StockControllers::class, 'index'])->name('index');
+        Route::get('/inventaire',    [StockControllers::class, 'inventaire'])->name('inventaire');
+        Route::get('/create',        [StockControllers::class, 'create'])->name('create');
+        Route::post('/',             [StockControllers::class, 'store'])->name('store');
+
+        // Descriptions (associées aux stocks)
+        Route::get('/description/create/{stock_id}', [DescriptionController::class, 'createdescription'])
+            ->name('description.create');
+        Route::post('/description/store/{id_stock}', [DescriptionController::class, 'store'])
+            ->name('description.store');
+
+        // Routes dynamiques EN DERNIER (pour éviter les conflits avec /inventaire ou /create)
+        Route::get('/{stock}',       [StockControllers::class, 'show'])->name('show');
+        Route::get('/{stock}/edit',  [StockControllers::class, 'edit'])->name('edit');
+        Route::put('/{stock}',       [StockControllers::class, 'update'])->name('update');
+        Route::delete('/{stock}',    [StockControllers::class, 'destroy'])->name('destroy');
+    });
+
+// ─── Suppression description (hors préfixe stock) ────────────────────────────
+Route::delete('/description/{description}', [DescriptionController::class, 'destroy'])
+    ->middleware('auth')
+    ->name('description.destroy');

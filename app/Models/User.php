@@ -2,48 +2,45 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Traits\HasRole;
+use App\Enums\UserRole;
+use App\Models\Vente;
 
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+    use HasRole;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
+        'role',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
+        'role' => UserRole::class,  // cast automatique vers Enum
     ];
-    // ✅ AJOUTER optionnel
-    public function ventes() {
+
+    public function ventes()
+    {
         return $this->hasMany(Vente::class, 'user_id');
+    }
+    public function isAdmin(): bool
+    {
+        $role = $this->roleService()->role();
+
+        return $role === UserRole::ADMIN || $role === UserRole::SUPER_ADMIN;
     }
 }

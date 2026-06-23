@@ -20,7 +20,7 @@ class VenteController extends Controller
 
     public function create()
     {
-        $stocks      = Stock::all();
+        $stocks = Stock::all();
         $descriptions = Description::where('effectif', '>', 0)->get();
         $categories  = SousCategory::all();
 

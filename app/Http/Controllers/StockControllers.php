@@ -20,7 +20,7 @@ class StockControllers extends Controller
             $userRole = auth()->user()->roleService()->role(); // Retourne l'instance UserRole
 
             // On vérifie si le rôle correspond à ADMIN ou SUPER_ADMIN de l'Enum
-            if ($userRole !== UserRole::ADMIN && $userRole !== UserRole::SUPER_ADMIN) {
+            if ($userRole !== UserRole::ADMINS && $userRole !== UserRole::SUPER_ADMIN) {
                 abort(403, "Action non autorisée. Vous devez être administrateur.");
             }
 

@@ -38,10 +38,10 @@
                                     </td>
 
                                     <td class="d-flex gap-1">
-                                        <a href="{{ route('description.create', $stock->id) }}"
+                                      {{-- <a href="{{ route('description.create', $stock->id) }}"
                                            class="btn btn-sm btn-success">
                                             ➕
-                                        </a>
+                                        </a>--}}
                                     </td>
                                 </tr>
 

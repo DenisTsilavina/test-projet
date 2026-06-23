@@ -25,6 +25,8 @@ class RoleService
     public function isClient():    bool { return !$this->isAdmin() && $this->role() === UserRole::CLIENT; }
     public function isVendeur():   bool { return !$this->isAdmin() && $this->role() === UserRole::VENDEUR; }
     public function isSuperAdmin():bool { return  $this->isAdmin() && $this->role() === UserRole::SUPER_ADMIN; }
+    public function isAdmins():bool { return  $this->isAdmin() && $this->role() === UserRole::ADMINS; }
+
 
     public function dashboardRoute(): string
     {
@@ -35,7 +37,6 @@ class RoleService
         }
 
         return match($this->role()) {
-            UserRole::CUISINIER => 'cuisinier.dashboard',
             UserRole::VENDEUR   => 'vendeur.dashboard',
             default             => 'dashboard',
         };

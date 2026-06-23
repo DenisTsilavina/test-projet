@@ -37,10 +37,26 @@ class User extends Authenticatable
     {
         return $this->hasMany(Vente::class, 'user_id');
     }
+
+    public function roleService()
+    {
+        return new class($this->role) {
+            private $roleEnum;
+
+            public function __construct($roleEnum)
+            {
+                $this->roleEnum = $roleEnum;
+            }
+
+            public function role()
+            {
+                return $this->roleEnum; // Retourne l'instance complète de l'Enum (ex: UserRole::ADMINS)
+            }
+        };
+    }
     public function isAdmin(): bool
     {
-        $role = $this->roleService()->role();
-
-        return $role === UserRole::ADMIN || $role === UserRole::SUPER_ADMIN;
+        return $this->role === UserRole::ADMINS
+            || $this->role === UserRole::SUPER_ADMIN;
     }
 }

@@ -13,7 +13,27 @@ Route::view('profile', 'profile')
     ->middleware('auth')
     ->name('profile');
 
+
 require __DIR__.'/auth.php';
+// APRÈS
+// Logout
+Route::post('/logout', [UserController::class, 'logout'])
+    ->middleware('auth')
+    ->name('logout');
+
+// CRUD Users (Super Admin seulement)
+Route::prefix('admin/users')
+    ->middleware(['auth', 'role:super_admin'])
+    ->name('admin.users.')
+    ->group(function () {
+        Route::get('/',            [UserController::class, 'list'])->name('list');
+        Route::get('/create',      [UserController::class, 'create'])->name('create');
+        Route::post('/',           [UserController::class, 'store'])->name('store');
+        Route::get('/{user}',      [UserController::class, 'show'])->name('show');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
+        Route::put('/{user}',      [UserController::class, 'update'])->name('update');
+        Route::delete('/{user}',   [UserController::class, 'destroy'])->name('destroy');
+    });
 
 // ─── Redirection post-login (selon rôle) ─────────────────────────────────────
 Route::get('/dashboard', [UserController::class, 'index'])

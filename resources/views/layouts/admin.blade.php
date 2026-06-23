@@ -57,7 +57,8 @@
                                 Liste des stocks
                             </a>
 
-                            @if(auth()->check() && (auth()->user()->roleService()->role() === \App\Enums\UserRole::ADMIN || auth()->user()->roleService()->role() === \App\Enums\UserRole::SUPER_ADMIN))
+                            {{-- CORRECTION : Seul un administrateur (ADMINS) ou un super administrateur (SUPER_ADMIN) peut voir le lien de création --}}
+                            @if(auth()->check() && (auth()->user()->roleService()->role() === \App\Enums\UserRole::ADMINS || auth()->user()->roleService()->role() === \App\Enums\UserRole::SUPER_ADMIN))
                                 <a href="{{ route('stock.create') }}"
                                    class="block px-3 py-2 text-xs font-medium rounded-md transition-colors {{ request()->routeIs('stock.create') ? 'text-white bg-indigo-600/50' : 'text-slate-400 hover:text-white hover:bg-slate-800' }}">
                                     Créer un stock
@@ -72,6 +73,7 @@
                     </div>
                 </div>
 
+                {{-- Sécurité : Seul le rôle SUPER_ADMIN a accès au menu d'administration globale --}}
                 @if(auth()->check() && auth()->user()->roleService()->role() === \App\Enums\UserRole::SUPER_ADMIN)
                     <div class="space-y-1">
                         <p class="px-3 mb-2 text-xs font-semibold tracking-wider uppercase text-slate-500">Super Admin</p>
@@ -91,10 +93,20 @@
                     <div class="flex items-center justify-center font-bold text-white uppercase rounded-full w-9 h-9 bg-gradient-to-tr from-indigo-500 to-purple-500 shrink-0">
                         {{ Str::upper(Str::substr(auth()->user()->name, 0, 1)) }}
                     </div>
-                    <div class="min-w-0 truncate">
+                    <div class="min-w-0 flex-1 truncate">
                         <p class="text-sm font-semibold text-white truncate">{{ auth()->user()->name }}</p>
                         <p class="text-xs text-slate-400 truncate">{{ auth()->user()->roleService()->role()->label() }}</p>
                     </div>
+
+                    {{-- Bouton déconnexion --}}
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                                title="Se déconnecter"
+                                class="flex items-center justify-center w-8 h-8 rounded-lg text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors duration-200">
+                            <i class="text-base ti ti-logout"></i>
+                        </button>
+                    </form>
                 </div>
             </div>
         @endif
@@ -102,16 +114,7 @@
 
     <div class="flex flex-col flex-1 min-w-0">
 
-        <header class="flex items-center justify-between h-16 px-6 bg-white border-b border-slate-200 shrink-0">
-            <h1 class="text-xl font-bold tracking-tight text-slate-900">@yield('page-title', 'Tableau de bord')</h1>
 
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="flex items-center gap-2 px-3 py-2 text-sm font-medium transition-colors rounded-lg text-slate-600 hover:bg-slate-50 hover:text-rose-600">
-                    <i class="text-base ti ti-logout"></i> Déconnexion
-                </button>
-            </form>
-        </header>
 
         <main class="flex-1 p-6 md:p-8 max-w-[1600px] w-full mx-auto">
 

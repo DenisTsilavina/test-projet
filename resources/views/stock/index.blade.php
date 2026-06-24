@@ -130,7 +130,7 @@
                                 <tr class="text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">
                                     <th class="px-5 py-3">Description</th>
                                     <th class="px-5 py-3">Sous-catégorie</th>
-                                    <th class="px-5 py-3 text-center">Effectif</th>
+                                    <th class="px-5 py-3 text-center">Origine</th>
                                     <th class="px-5 py-3 text-right">Prix achat</th>
                                     <th class="px-5 py-3 text-right">Prix vente</th>
                                     <th class="px-5 py-3 text-right">Actions</th>
@@ -191,7 +191,7 @@
                                             {{ $subCat->stock_categorie }}
                                         </span>
                                                 </td>
-                                                <td class="px-5 py-3.5 text-center font-semibold text-slate-700">{{ $desc->effectif }}</td>
+                                                <td class="px-5 py-3.5 text-center font-semibold text-slate-700">{{ $desc->region }}</td>
                                                 <td class="px-5 py-3.5 text-right text-slate-500 tabular-nums text-xs">
                                                     {{ $subCat->prix_achat ? number_format($subCat->prix_achat, 0, ',', ' ') . ' Ar' : '—' }}
                                                 </td>
@@ -289,17 +289,17 @@
                                 @enderror
                             </div>
 
-                            {{-- Effectif --}}
+                            {{-- region d'origine --}}
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1.5">
-                                    Effectif <span class="text-rose-500">*</span>
+                                    region d'origine <span class="text-rose-500">*</span>
                                 </label>
-                                <input type="text" name="effectif"
-                                       value="{{ old('effectif') }}"
-                                       placeholder="Ex: 200"
+                                <input type="text" name="region"
+                                       value="{{ old('region') }}"
+                                       placeholder="region d'origine, ex:vakinakaratra"
                                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900"
                                        required>
-                                @error('effectif')
+                                @error('region')
                                 <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
                                 @enderror
                             </div>

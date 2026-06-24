@@ -41,7 +41,7 @@ class DescriptionController extends Controller
         $validated = $request->validate([
             'stock_id'    => 'required|exists:stocks,id',
             'description' => 'required|string|max:255',
-            'effectif'    => 'required|string|max:100',
+            'region'    => 'required|string|max:100',
         ]);
 
         Description::create($validated);
@@ -68,7 +68,7 @@ class DescriptionController extends Controller
     {
         $validated = $request->validate([
             'description' => 'required|string|max:255',
-            'effectif'    => 'required|string|max:100',
+            'region'    => 'required|string|max:100',
         ]);
 
         $description->update($validated);

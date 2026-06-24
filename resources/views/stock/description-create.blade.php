@@ -38,8 +38,8 @@
                        </div>
 
                        <div class="mb-3">
-                           <label for="effectif">Effectif</label>
-                           <input type="number" name="effectif" id="effectif" class="form-control" required>
+                           <label for="region">Region d'origine</label>
+                           <input type="text" name="region" id="region" class="form-control" required>
                        </div>
 
                        <div class="mb-3">

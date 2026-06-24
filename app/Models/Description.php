@@ -11,7 +11,7 @@ class Description extends Model
     protected $fillable = [
         'stock_id',
         'description',
-        'effectif',
+        'region',
     ];
 
     public function stock(){

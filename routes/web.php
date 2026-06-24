@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\StockControllers; // Attention au "s" à StockControllers, vérifiez le nom de votre fichier
 use App\Http\Controllers\DescriptionController;
 use App\Http\Controllers\UserController;
@@ -106,15 +107,19 @@ Route::delete('/description/{description}', [DescriptionController::class, 'dest
 Route::resource('stock', StockControllers::class);
 
 // Descriptions
-Route::get('/description/create/{stock_id}',    [DescriptionController::class, 'create'])->name('description.create');
-Route::post('/description',                      [DescriptionController::class, 'store'])->name('description.store');
-Route::get('/description/{description}/edit',   [DescriptionController::class, 'edit'])->name('description.edit');
-Route::put('/description/{description}',         [DescriptionController::class, 'update'])->name('description.update');
-Route::delete('/description/{description}',      [DescriptionController::class, 'destroy'])->name('description.destroy');
+Route::get('/description/create/{stock_id}', [DescriptionController::class, 'create'])->name('description.create');
+Route::post('/description', [DescriptionController::class, 'store'])->name('description.store');
+Route::get('/description/{description}/edit', [DescriptionController::class, 'edit'])->name('description.edit');
+Route::put('/description/{description}', [DescriptionController::class, 'update'])->name('description.update');
+Route::delete('/description/{description}', [DescriptionController::class, 'destroy'])->name('description.destroy');
 
 // Sous-catégories
 Route::get('/souscategorie/create/{description_id}', [DescriptionController::class, 'createSousCategorie'])->name('souscategorie.create');
-Route::post('/souscategorie',                         [DescriptionController::class, 'storeSousCategorie'])->name('souscategorie.store');
-Route::get('/souscategorie/{sousCategory}/edit',      [DescriptionController::class, 'editSousCategorie'])->name('souscategorie.edit');
-Route::put('/souscategorie/{sousCategory}',           [DescriptionController::class, 'updateSousCategorie'])->name('souscategorie.update');
-Route::delete('/souscategorie/{sousCategory}',        [DescriptionController::class, 'destroySousCategorie'])->name('souscategorie.destroy');
+Route::post('/souscategorie', [DescriptionController::class, 'storeSousCategorie'])->name('souscategorie.store');
+Route::get('/souscategorie/{sousCategory}/edit', [DescriptionController::class, 'editSousCategorie'])->name('souscategorie.edit');
+Route::put('/souscategorie/{sousCategory}', [DescriptionController::class, 'updateSousCategorie'])->name('souscategorie.update');
+Route::delete('/souscategorie/{sousCategory}', [DescriptionController::class, 'destroySousCategorie'])->name('souscategorie.destroy');
+
+Route::get('client/commande/create', [CommandeController::class, 'create'])->name('commande.create');
+Route::post('client/commande/create', [CommandeController::class, 'store'])->name('commande.store');
+

@@ -25,11 +25,25 @@ class Stock extends Model
     }
 
     /**
-     * Unités rattachées à ce stock (avec quantité en pivot).
+     * Relation Many-to-Many connectée via le symbole de l'unité.
      */
+   /** public function unites()
+    {
+        return $this->belongsToMany(
+            Unite::class,         // 1. Modèle ciblé
+            'stock_unite',        // 2. Nom de la table pivot
+            'stock_id',           // 3. Clé pivot liée au modèle actuel (Stock)
+            'unite_symbole',      // 4. Clé pivot liée au modèle ciblé (Unite)
+            'id',                 // 5. Clé locale de référence (stocks.id)
+            'symbole'             // 6. Clé distante de référence (unites.symbole)
+        )
+            ->withPivot('quantite')
+            ->withTimestamps();
+    }*/
     public function unites()
     {
         return $this->belongsToMany(Unite::class, 'stock_unite')
+            ->using(StockUnite::class)
             ->withPivot('quantite')
             ->withTimestamps();
     }

@@ -101,3 +101,20 @@ Route::prefix('stock')
 Route::delete('/description/{description}', [DescriptionController::class, 'destroy'])
     ->middleware('auth')
     ->name('description.destroy');
+
+// Stocks
+Route::resource('stock', StockControllers::class);
+
+// Descriptions
+Route::get('/description/create/{stock_id}',    [DescriptionController::class, 'create'])->name('description.create');
+Route::post('/description',                      [DescriptionController::class, 'store'])->name('description.store');
+Route::get('/description/{description}/edit',   [DescriptionController::class, 'edit'])->name('description.edit');
+Route::put('/description/{description}',         [DescriptionController::class, 'update'])->name('description.update');
+Route::delete('/description/{description}',      [DescriptionController::class, 'destroy'])->name('description.destroy');
+
+// Sous-catégories
+Route::get('/souscategorie/create/{description_id}', [DescriptionController::class, 'createSousCategorie'])->name('souscategorie.create');
+Route::post('/souscategorie',                         [DescriptionController::class, 'storeSousCategorie'])->name('souscategorie.store');
+Route::get('/souscategorie/{sousCategory}/edit',      [DescriptionController::class, 'editSousCategorie'])->name('souscategorie.edit');
+Route::put('/souscategorie/{sousCategory}',           [DescriptionController::class, 'updateSousCategorie'])->name('souscategorie.update');
+Route::delete('/souscategorie/{sousCategory}',        [DescriptionController::class, 'destroySousCategorie'])->name('souscategorie.destroy');

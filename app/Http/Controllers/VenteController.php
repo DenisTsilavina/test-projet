@@ -86,7 +86,7 @@ class VenteController extends Controller
             $description = Description::find($vente['description_id']);
 
             if (!$description) {
-                $errors["ventes.$i.description_id"] = 'Article introuvable.';
+                $errors["ventes.$i.description_id"] = 'article introuvable.';
                 continue;
             }
 

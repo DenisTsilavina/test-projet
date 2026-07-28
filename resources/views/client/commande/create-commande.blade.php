@@ -12,7 +12,7 @@
 
             <div class="mb-8 border-b border-gray-200 pb-4">
                 <h3 class="text-xl font-bold text-gray-900">Nouvelle demande</h3>
-                <p class="mt-1 text-sm text-gray-500">Remplissez le formulaire ci-dessous pour enregistrer votre commande.</p>
+                <p class="mt-1 text-sm text-gray-500">Remplissez le formulaire ci-dessous pour enregistrer votre commande. Le montant sera calculé automatiquement une fois les ingrédients et la main d'œuvre ajoutés.</p>
             </div>
 
             {{-- Messages Flash de succès --}}
@@ -38,75 +38,67 @@
                 </div>
             @endif
 
+            {{-- Route corrigée : 'commandes.store' (cohérent avec 'commandes.index' utilisé ailleurs) --}}
             <form action="{{ route('commande.store') }}" method="POST" class="space-y-6">
                 @csrf
 
-                {{-- Type de commande --}}
+                {{--
+                    La référence n'est plus saisie ici : elle est générée
+                    automatiquement à l'enregistrement (ex: CMD-2026-0001).
+                --}}
+
+                {{-- Type de sélection (Pour dynamique / UX) --}}
                 <div>
-                    <label for="type_commande" class="block text-sm font-semibold text-gray-700 mb-2">Que voulez-vous commander ?</label>
-                    <select id="type_commande" name="type_commande" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" required>
-                        <option value="" disabled {{ old('type_commande') ? '' : 'selected' }}>-- Sélectionner le type --</option>
-                        <option value="article" {{ old('type_commande') == 'article' ? 'selected' : '' }}>Un Article du catalogue</option>
-                        <option value="stock" {{ old('type_commande') == 'stock' ? 'selected' : '' }}>Un élément du Stock</option>
-                        <option value="autre" {{ old('type_commande') == 'autre' ? 'selected' : '' }}>Autre chose (Hors catalogue / Sur-mesure)</option>
+                    <label for="type_selection" class="block text-sm font-semibold text-gray-700 mb-2">Source de la commande</label>
+                    <select id="type_selection" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                        <option value="autre" selected>Saisir une désignation personnalisée</option>
+                        <option value="stock">Choisir depuis le Stock disponible</option>
                     </select>
                 </div>
 
-                {{-- Bloc Article --}}
-                <div id="bloc_article" class="hidden">
-                    <label for="article_id" class="block text-sm font-semibold text-gray-700 mb-2">Sélectionner l'article</label>
-                    <select id="article_id" name="article_id" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
-                        <option value="">-- Choisir un article --</option>
-                       {{-- @foreach($articles as $article)
-                            <option value="{{ $article->id }}" {{ old('article_id') == $article->id ? 'selected' : '' }}>
-                                {{ $article->nom }}
-                            </option>
-                        @endforeach-}}
-                    </select>
-                </div>
-
-                {{-- Bloc Stock --}}
+                {{-- Bloc Stock (Masqué par défaut, géré par JS) --}}
                 <div id="bloc_stock" class="hidden">
-                    <label for="stock_id" class="block text-sm font-semibold text-gray-700 mb-2">Sélectionner dans le stock</label>
-                    <select id="stock_id" name="stock_id" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                    <label for="stock_select" class="block text-sm font-semibold text-gray-700 mb-2">Sélectionner dans le stock</label>
+                    <select id="stock_select" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
                         <option value="">-- Choisir un élément du stock --</option>
                         @foreach($stocks as $stock)
-                            <option value="{{ $stock->id }}" {{ old('stock_id') == $stock->id ? 'selected' : '' }}>
-                                {{ $stock->designation }}
-                            </option>
+                            <option value="{{ $stock->designation }}">{{ $stock->designation }}</option>
                         @endforeach
                     </select>
                 </div>
 
-                {{-- Bloc Autre --}}
-                <div id="bloc_autre" class="hidden">
-                    <label for="nom_commande" class="block text-sm font-semibold text-gray-700 mb-2">Nom / Désignation de la commande</label>
-                    <input type="text" id="nom_commande" name="nom_commande" value="{{ old('nom_commande') }}" placeholder="Ex: Prestation informatique, gâteau personnalisé..." class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">
+                {{-- Désignation (Le champ final soumis au contrôleur) --}}
+                <div>
+                    <label for="designation" class="block text-sm font-semibold text-gray-700 mb-2">Désignation de la commande</label>
+                    <input type="text" id="designation" name="designation" value="{{ old('designation') }}" placeholder="Ex: Prestation informatique, Matériel..." class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" required>
                 </div>
 
                 {{-- Quantité --}}
                 <div>
-                    <label for="effectif" class="block text-sm font-semibold text-gray-700 mb-2">Effectif / Quantité requise</label>
-                    <input type="number" id="effectif" name="effectif" min="1" value="{{ old('effectif', 1) }}" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" required>
+                    <label for="quantite" class="block text-sm font-semibold text-gray-700 mb-2">Quantité</label>
+                    <input type="number" id="quantite" name="quantite" min="1" value="{{ old('quantite', 1) }}" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" required>
                 </div>
 
-                {{-- Date --}}
-                <div>
-                    <label for="date_besoin" class="block text-sm font-semibold text-gray-700 mb-2">Date de besoin</label>
-                    <input type="date" id="date_besoin" name="date_besoin" value="{{ old('date_besoin') }}" class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition" required>
-                </div>
+                {{--
+                    Champs "Montant" et "Statut" retirés du formulaire client :
+                    - Le montant est calculé automatiquement à partir des ingrédients
+                      et de la main d'œuvre (voir Commande::recalculerMontant()).
+                    - Le statut est fixé à "en_attente" à la création et n'est
+                      modifiable que par un administrateur.
+                --}}
 
-                {{-- Commentaires --}}
+                {{-- Note / Commentaires --}}
                 <div>
-                    <label for="commentaires" class="block text-sm font-semibold text-gray-700 mb-2">Commentaires ou détails additionnels (Optionnel)</label>
-                    <textarea id="commentaires" name="commentaires" rows="3" placeholder="Ajoutez des précisions (ex: détails livraison mini-hôtel)..." class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">{{ old('commentaires') }}</textarea>
+                    <label for="note" class="block text-sm font-semibold text-gray-700 mb-2">Note ou détails additionnels (Optionnel)</label>
+                    <textarea id="note" name="note" rows="3" placeholder="Ajoutez des précisions ici..." class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition">{{ old('note') }}</textarea>
                 </div>
 
                 {{-- Boutons d'action --}}
                 <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">
-                   {{--}} <a href="{{ route('commandes.index') }}" class="px-5 py-3 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition">
+                    {{-- route('commandes.index') --}}
+                    <a href="" class="px-5 py-3 rounded-lg text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition">
                         Annuler
-                    </a>--}}
+                    </a>
                     <button type="submit" class="bg-indigo-600 text-white px-5 py-3 rounded-lg text-sm font-semibold hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition shadow">
                         Confirmer et lancer la commande
                     </button>
@@ -115,42 +107,29 @@
         </div>
     </div>
 
-    {{-- Script natif réinjecté pour s'exécuter dans le DOM du layout --}}
+    {{-- Script pour lier le choix du stock au champ désignation --}}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const typeSelect = document.getElementById('type_commande');
+            const typeSelection = document.getElementById('type_selection');
+            const blocStock = document.getElementById('bloc_stock');
+            const stockSelect = document.getElementById('stock_select');
+            const designationInput = document.getElementById('designation');
 
-            const blocs = {
-                article: document.getElementById('bloc_article'),
-                stock: document.getElementById('bloc_stock'),
-                autre: document.getElementById('bloc_autre')
-            };
-
-            const inputs = {
-                article: document.getElementById('article_id'),
-                stock: document.getElementById('stock_id'),
-                autre: document.getElementById('nom_commande')
-            };
-
-            function toggleFields(selectedType) {
-                Object.keys(blocs).forEach(key => {
-                    if (blocs[key]) blocs[key].classList.add('hidden');
-                    if (inputs[key]) inputs[key].required = false;
-                });
-
-                if (selectedType && blocs[selectedType]) {
-                    blocs[selectedType].classList.remove('hidden');
-                    inputs[selectedType].required = true;
+            typeSelection.addEventListener('change', function() {
+                if (this.value === 'stock') {
+                    blocStock.classList.remove('hidden');
+                } else {
+                    blocStock.classList.add('hidden');
+                    stockSelect.value = "";
                 }
-            }
-
-            typeSelect.addEventListener('change', function() {
-                toggleFields(this.value);
             });
 
-            if(typeSelect.value) {
-                toggleFields(typeSelect.value);
-            }
+            // Quand on choisit un élément du stock, cela remplit automatiquement la désignation
+            stockSelect.addEventListener('change', function() {
+                if (this.value) {
+                    designationInput.value = this.value;
+                }
+            });
         });
     </script>
 @endsection

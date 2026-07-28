@@ -150,4 +150,11 @@ class UserController extends Controller
 
         return redirect('/login');
     }
+    public function homeData(Request $request)
+    {
+        return response()->json([
+            'user' => $request->user(),
+            'produits' => \App\Models\Stock::latest()->take(8)->get(), // Récupère les 8 derniers stocks/produits
+        ]);
+    }
 }

@@ -11,14 +11,18 @@ return new class extends Migration
      */
     public function up(): void
     {
+
         Schema::create('descriptions', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('stock_id')->constrained()->onDelete('cascade');
+            $table->foreignId('stock_id')->nullable()->constrained('stocks')->nullOnDelete();
             $table->string('description');
-            $table->string('region');
+            $table->integer('effectif')->default(0);
+            $table->foreignId('unite_id')->nullable()->constrained('unites')->nullOnDelete();
+            $table->string('region')->nullable();
             $table->timestamps();
         });
     }
+
 
     /**
      * Reverse the migrations.

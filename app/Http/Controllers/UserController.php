@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -15,11 +16,17 @@ class UserController extends Controller
      */
     public function index()
     {
+        // CHANGEMENT : isAdmin() ne couvrait que 2 des 4 rôles (ADMINS /
+        // SUPER_ADMIN). Un VENDEUR tombait dans la branche "else" et était
+        // envoyé vers client.dashboard — route protégée par role:0 (CLIENT
+        // uniquement) — d'où le 403 "Accès refusé" pour un Vendeur qui vient
+        // de se connecter. Seul CLIENT va côté client ; tous les autres
+        // rôles (VENDEUR, ADMINS, SUPER_ADMIN) vont côté admin.
         $user = Auth::user();
 
-        return $user->isAdmin()
-            ? redirect()->route('admin.vente.dashboard')
-            : redirect()->route('client.dashboard');
+        return $user->role === UserRole::CLIENT
+            ? redirect()->route('client.dashboard')
+            : redirect()->route('admin.dashboard');
     }
 
     /**
@@ -28,7 +35,7 @@ class UserController extends Controller
     public function list()
     {
         $users = User::latest()->paginate(10);
-        return view('admin.users.index', compact('users'));
+        return view('admin.vente.dashboard', compact('users'));
     }
 
     /**
@@ -120,16 +127,24 @@ class UserController extends Controller
     }
 
     /**
-     * Dashboard client
+     * Dashboard client (SPA Vue)
      */
     public function clientDashboard()
     {
-        $user = Auth::user();
-        return view('client.dashboard', compact('user'));
+        // CHANGEMENT : même logique que index() — on compare le rôle exact
+        // (CLIENT ou non) plutôt que isAdmin(), pour que ce garde-fou
+        // bloque aussi un VENDEUR qui arriverait ici, pas seulement un
+        // admin. Et 'admin.vente.dashboard' -> 'admin.dashboard' (ancien
+        // nom de route, supprimé lors du renommage).
+        if (Auth::user()?->role !== UserRole::CLIENT) {
+            return redirect()->route('client.dashboard');
+        }
+
+        return view('layouts.client');
     }
 
     /**
-     * Dashboard admin
+     * Dashboard admin (Blade)
      */
     public function adminDashboard()
     {
@@ -150,11 +165,12 @@ class UserController extends Controller
 
         return redirect('/login');
     }
+
     public function homeData(Request $request)
     {
         return response()->json([
             'user' => $request->user(),
-            'produits' => \App\Models\Stock::latest()->take(8)->get(), // Récupère les 8 derniers stocks/produits
+            'produits' => \App\Models\Stock::latest()->take(8)->get(),
         ]);
     }
 }

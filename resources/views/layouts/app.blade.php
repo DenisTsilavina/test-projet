@@ -214,7 +214,9 @@
                 </div>
             @endif
 
-            @yield('content')
+            <div id="app">
+                <router-view></router-view>
+            </div>
 
         </main>
     </div>

@@ -13,8 +13,6 @@ class Unite extends Model
 
     public function stocks()
     {
-        return $this->belongsToMany(Stock::class, 'stock_unite')
-            ->withPivot('quantite')
-            ->withTimestamps();
+        return $this->hasMany(Stock::class);
     }
 }

@@ -4,17 +4,14 @@ namespace App\Http\Controllers;
 
 use App\Models\Description;
 use App\Models\Stock;
-use App\Models\SousCategory; // Ajout de l'import manquant pour la sous-catégorie
+use App\Models\SousCategory;
 use Illuminate\Http\Request;
 
 class DescriptionController extends Controller
 {
-    /**
-     * Liste des stocks avec descriptions (vue index).
-     */
     public function index()
     {
-        $stocks = Stock::with(['descriptions.sousCategories', 'unites'])->get();
+        $stocks = Stock::with(['descriptions.sousCategorie', 'unites'])->get();
 
         return view('stock.index', compact('stocks'));
     }
@@ -23,9 +20,6 @@ class DescriptionController extends Controller
     // GESTION DES DESCRIPTIONS
     // ==========================================
 
-    /**
-     * Affiche le formulaire de création d'une description.
-     */
     public function create($stock_id)
     {
         $stock = Stock::findOrFail($stock_id);
@@ -33,15 +27,12 @@ class DescriptionController extends Controller
         return view('stock.description-create', compact('stock'));
     }
 
-    /**
-     * Enregistre une nouvelle description.
-     */
     public function store(Request $request)
     {
         $validated = $request->validate([
             'stock_id'    => 'required|exists:stocks,id',
             'description' => 'required|string|max:255',
-            'region'    => 'required|string|max:100',
+            'region'      => 'required|string|max:100',
         ]);
 
         Description::create($validated);
@@ -51,9 +42,6 @@ class DescriptionController extends Controller
             ->with('success', 'Description ajoutée avec succès !');
     }
 
-    /**
-     * Affiche le formulaire d'édition d'une description.
-     */
     public function edit(Description $description)
     {
         $description->load('stock');
@@ -61,14 +49,11 @@ class DescriptionController extends Controller
         return view('stock.description-edit', compact('description'));
     }
 
-    /**
-     * Met à jour une description existante.
-     */
     public function update(Request $request, Description $description)
     {
         $validated = $request->validate([
             'description' => 'required|string|max:255',
-            'region'    => 'required|string|max:100',
+            'region'      => 'required|string|max:100',
         ]);
 
         $description->update($validated);
@@ -78,9 +63,6 @@ class DescriptionController extends Controller
             ->with('success', 'Description mise à jour avec succès !');
     }
 
-    /**
-     * Supprime une description.
-     */
     public function destroy(Description $description)
     {
         $description->delete();
@@ -91,12 +73,9 @@ class DescriptionController extends Controller
     }
 
     // ==========================================
-    // GESTION DES SOUS-CATÉGORIES (Noms corrigés)
+    // GESTION DES SOUS-CATÉGORIES
     // ==========================================
 
-    /**
-     * Affiche la page de création d'une sous-catégorie.
-     */
     public function createSousCategorie($description_id)
     {
         $description = Description::with('stock')->findOrFail($description_id);
@@ -104,14 +83,13 @@ class DescriptionController extends Controller
         return view('stock.souscategorie-create', compact('description'));
     }
 
-    /**
-     * Enregistre une nouvelle sous-catégorie.
-     */
     public function storeSousCategorie(Request $request)
     {
+        // CHANGEMENT : 'stock_categorie' retiré — cette colonne n'existe plus
+        // dans `sous_categories`. La quantité disponible est désormais suivie
+        // uniquement via descriptions.effectif (voir VenteController).
         $validated = $request->validate([
-            'description_id'  => 'required|exists:descriptions,id',
-            'stock_categorie' => 'required|string|max:255',
+            'description_id' => 'required|exists:descriptions,id',
             'prix_achat'      => 'nullable|numeric|min:0',
             'prix_vente'      => 'nullable|numeric|min:0',
         ]);
@@ -123,9 +101,6 @@ class DescriptionController extends Controller
             ->with('success', 'Sous-catégorie ajoutée avec succès !');
     }
 
-    /**
-     * Affiche la page d'édition d'une sous-catégorie.
-     */
     public function editSousCategorie(SousCategory $sousCategory)
     {
         $sousCategory->load('description.stock');
@@ -133,15 +108,12 @@ class DescriptionController extends Controller
         return view('stock.souscategorie-edit', compact('sousCategory'));
     }
 
-    /**
-     * Met à jour une sous-catégorie existante.
-     */
     public function updateSousCategorie(Request $request, SousCategory $sousCategory)
     {
+        // CHANGEMENT : idem, 'stock_categorie' retiré du validate/update.
         $validated = $request->validate([
-            'stock_categorie' => 'required|string|max:255',
-            'prix_achat'      => 'nullable|numeric|min:0',
-            'prix_vente'      => 'nullable|numeric|min:0',
+            'prix_achat' => 'nullable|numeric|min:0',
+            'prix_vente' => 'nullable|numeric|min:0',
         ]);
 
         $sousCategory->update($validated);
@@ -151,9 +123,6 @@ class DescriptionController extends Controller
             ->with('success', 'Sous-catégorie mise à jour avec succès !');
     }
 
-    /**
-     * Supprime une sous-catégorie.
-     */
     public function destroySousCategorie(SousCategory $sousCategory)
     {
         $sousCategory->delete();

@@ -19,7 +19,7 @@ class SousCategory extends Model
     }
 
     // ✅ AJOUTER — relation vers Vente
-    public function ventes() {
+    public function vente() {
         return $this->hasMany(Vente::class, 'sous_categorie_id');
     }
 

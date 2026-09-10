@@ -30,7 +30,9 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
-        'role' => UserRole::class,  // cast automatique vers Enum
+        // cast automatique vers Enum
+        'role' => UserRole::class,
+
     ];
 
     public function ventes()
@@ -57,6 +59,13 @@ class User extends Authenticatable
     public function isAdmin(): bool
     {
         return $this->role === UserRole::ADMINS
-            || $this->role === UserRole::SUPER_ADMIN;
+            || $this->role === UserRole::SUPER_ADMIN
+            || $this->role=== UserRole::VENDEUR
+        ;
+
+    }
+    public function commandes()
+    {
+        return $this->hasMany(Commande::class, 'client_id');
     }
 }

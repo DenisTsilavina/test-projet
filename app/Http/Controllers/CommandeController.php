@@ -16,9 +16,10 @@ class CommandeController extends Controller
 
     /**
      * Tableau de bord client : stats + activité récente.
-     * Alimente les variables attendues par client/dashboard.blade.php.
+     * Retourne du JSON pour le front Vue (ClientDashboard.vue),
+     * ou la vue Blade si l'appel ne vient pas d'axios/fetch.
      */
-    public function dashboard()
+    public function dashboard(Request $request)
     {
         $commandes = Auth::user()->commandes();
 
@@ -38,6 +39,19 @@ class CommandeController extends Controller
 
         $recentCommandes = (clone $commandes)->latest()->take(5)->get();
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'user' => Auth::user(),
+                'stats' => [
+                    'total_commandes'     => $totalCommandes,
+                    'commandes_en_cours'  => $enCours,
+                    'commandes_livrees'   => $livrees,
+                    'total_depense'       => $montantTotal,
+                ],
+                'commandes' => $recentCommandes,
+            ]);
+        }
+
         return view('client.dashboard', compact(
             'totalCommandes',
             'enCours',
@@ -49,6 +63,7 @@ class CommandeController extends Controller
 
     /**
      * Liste des commandes de l'utilisateur connecté.
+     * JSON pour CommandeIndex.vue, Blade sinon.
      */
     public function index(Request $request)
     {
@@ -69,22 +84,28 @@ class CommandeController extends Controller
 
         $commandes = $query->paginate(10);
 
+        if ($request->wantsJson()) {
+            return response()->json($commandes);
+        }
+
         return view('client.commande.index', compact('commandes'));
     }
 
     /**
-     * Formulaire de création.
+     * Formulaire de création (utilisé uniquement pour la version Blade).
+     * Le composant Vue CommandeCreate.vue charge le stock via GET /api/stocks.
      */
     public function create()
     {
         $stocks = Stock::all();
 
-        // Bug corrigé : $stocks doit être transmis à la vue.
         return view('client.commande.create-commande', compact('stocks'));
     }
 
     /**
      * Enregistrement d'une nouvelle commande.
+     * Répond en JSON pour le formulaire Vue (CommandeCreate.vue),
+     * ou redirige pour un envoi de formulaire Blade classique.
      *
      * NB : 'statut' et 'montant' ne sont plus saisis par le client.
      * - 'statut' est fixé à 'en_attente' automatiquement (voir Commande::booted()).
@@ -108,8 +129,16 @@ class CommandeController extends Controller
 
         $commande = Commande::create($data);
 
-        return redirect()->back()
-            ->with('success', 'Commande ' . $commande->reference . ' créée avec succès ! Vous pouvez maintenant y ajouter les ingrédients et la main d\'œuvre.');
+        $message = 'Commande ' . $commande->reference . ' créée avec succès ! Vous pouvez maintenant y ajouter les ingrédients et la main d\'œuvre.';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'  => $message,
+                'commande' => $commande,
+            ], 201);
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 
     /**
@@ -123,9 +152,13 @@ class CommandeController extends Controller
         return view('client.commande.edit-commande', compact('commande'));
     }
 
-    public function show(Commande $commande)
+    public function show(Commande $commande, Request $request)
     {
         abort_if($commande->user_id !== Auth::id(), 403);
+
+        if ($request->wantsJson()) {
+            return response()->json($commande);
+        }
 
         $stocks = Stock::all(); // Pour le select des ingrédients
 
@@ -153,23 +186,39 @@ class CommandeController extends Controller
 
         $commande->update($data);
 
+        $message = 'Commande ' . $commande->reference . ' modifiée avec succès !';
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message'  => $message,
+                'commande' => $commande,
+            ]);
+        }
+
         return redirect()
             ->route('commandes.index')
-            ->with('success', 'Commande ' . $commande->reference . ' modifiée avec succès !');
+            ->with('success', $message);
     }
 
     /**
      * Suppression d'une commande.
      */
-    public function destroy(Commande $commande)
+    public function destroy(Commande $commande, Request $request)
     {
         abort_if($commande->user_id !== Auth::id(), 403);
 
         $ref = $commande->reference;
         $commande->delete();
 
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Commande ' . $ref . ' supprimée.',
+            ]);
+        }
+
         return redirect()
             ->back()
             ->with('success', 'Commande ' . $ref . ' supprimée.');
     }
 }
+

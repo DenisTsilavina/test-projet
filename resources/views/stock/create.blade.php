@@ -45,6 +45,10 @@
             </div>
 
             {{-- Responsable --}}
+            {{-- CHANGEMENT : plus de champ caché "persn_stock" à poster — le
+                 contrôleur assigne désormais responsable_id = auth()->id()
+                 automatiquement (FK vers users.id). Ce bloc est purement
+                 informatif, rien n'est envoyé en POST ici. --}}
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1.5">Responsable du stock</label>
                 <div class="relative rounded-lg shadow-sm">
@@ -55,9 +59,8 @@
                            class="w-full pl-9 pr-3 py-2 border border-slate-200 bg-slate-50 text-slate-500 rounded-lg text-sm cursor-not-allowed"
                            value="{{ auth()->user()->name }} ({{ auth()->user()->roleService()->role()->label() }})"
                            readonly>
-                    <input type="hidden" name="persn_stock" value="{{ auth()->user()->name }}">
                 </div>
-                <p class="mt-1 text-xs text-slate-400">Pré-rempli avec votre identifiant d'administrateur.</p>
+                <p class="mt-1 text-xs text-slate-400">Enregistré automatiquement avec votre compte.</p>
             </div>
 
             {{-- Date du Stock --}}
@@ -87,24 +90,20 @@
                             $is_checked = old('unites_checked.' . $unite->id) ? true : false;
                         @endphp
 
-                        {{-- Card Unité --}}
                         <label class="unit-card relative flex flex-col gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 select-none
                                       {{ $is_checked
                                             ? 'border-indigo-500 bg-indigo-50/60 shadow-sm'
                                             : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50/50' }}"
                                data-id="{{ $unite->id }}">
 
-                            {{-- Checkbox cachée --}}
                             <input type="checkbox"
                                    name="unites_checked[{{ $unite->id }}]"
                                    value="1"
                                    class="unit-checkbox sr-only"
                                 {{ $is_checked ? 'checked' : '' }}>
 
-                            {{-- Ligne haute : nom + badge symbole + indicateur --}}
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-2">
-                                    {{-- Indicateur visuel coché / non coché --}}
                                     <span class="unit-indicator flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-150
                                                  {{ $is_checked
                                                         ? 'border-indigo-500 bg-indigo-500'
@@ -118,7 +117,6 @@
                                 </span>
                             </div>
 
-                            {{-- Champ quantité --}}
                             <div class="flex items-center gap-2">
                                 <span class="text-xs font-medium text-slate-500 whitespace-nowrap">Qté initiale</span>
                                 <input type="number" step="0.01" min="0"
@@ -156,7 +154,6 @@
         document.addEventListener('DOMContentLoaded', function () {
             document.querySelectorAll('.unit-card').forEach(card => {
                 card.addEventListener('click', function (e) {
-                    // Éviter les doubles déclenchements depuis l'input number
                     if (e.target.tagName === 'INPUT' && e.target.type === 'number') return;
 
                     const checkbox  = card.querySelector('.unit-checkbox');
@@ -167,21 +164,18 @@
                     checkbox.checked = !checkbox.checked;
                     const checked = checkbox.checked;
 
-                    // Card border & bg
                     card.classList.toggle('border-indigo-500', checked);
                     card.classList.toggle('bg-indigo-50/60',   checked);
                     card.classList.toggle('shadow-sm',         checked);
                     card.classList.toggle('border-slate-200',  !checked);
                     card.classList.toggle('bg-white',          !checked);
 
-                    // Indicator
                     indicator.classList.toggle('border-indigo-500', checked);
                     indicator.classList.toggle('bg-indigo-500',     checked);
                     indicator.classList.toggle('border-slate-300',  !checked);
                     indicator.classList.toggle('bg-white',          !checked);
                     icon.classList.toggle('opacity-0', !checked);
 
-                    // Champ quantité
                     qtyInput.disabled = !checked;
                     qtyInput.classList.toggle('border-slate-300', checked);
                     qtyInput.classList.toggle('text-slate-900',   checked);
@@ -199,7 +193,6 @@
                     }
                 });
 
-                // Permettre la saisie dans le champ sans refermer la card
                 card.querySelector('.unit-quantity').addEventListener('click', e => e.stopPropagation());
             });
         });

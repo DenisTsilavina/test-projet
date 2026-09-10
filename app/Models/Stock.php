@@ -11,40 +11,41 @@ class Stock extends Model
 
     protected $fillable = [
         'name_stock',
-        'persn_stock',
         'date_stock',
+        'user_id',
+        'unite_id',
+        'quantite',
     ];
 
     protected $casts = [
-        'date_stock' => 'datetime:d/m/Y H:i',
+        'date_stock' => 'datetime',
+        'quantite'   => 'decimal:2',
     ];
+
+    /**
+     * CHANGEMENT : un stock appartient à une seule unité (belongsTo),
+     * remplace l'ancienne relation belongsToMany avec table pivot.
+     */
+    public function unite()
+    {
+        return $this->belongsTo(Unite::class);
+    }
+
+    /**
+     * CHANGEMENT : persn_stock (string libre) -> relation vers users.id
+     */
+    public function responsable()
+    {
+        return $this->belongsTo(User::class, 'responsable_id');
+    }
 
     public function descriptions()
     {
         return $this->hasMany(Description::class);
     }
 
-    /**
-     * Relation Many-to-Many connectée via le symbole de l'unité.
-     */
-   /** public function unites()
+    public function mouvements()
     {
-        return $this->belongsToMany(
-            Unite::class,         // 1. Modèle ciblé
-            'stock_unite',        // 2. Nom de la table pivot
-            'stock_id',           // 3. Clé pivot liée au modèle actuel (Stock)
-            'unite_symbole',      // 4. Clé pivot liée au modèle ciblé (Unite)
-            'id',                 // 5. Clé locale de référence (stocks.id)
-            'symbole'             // 6. Clé distante de référence (unites.symbole)
-        )
-            ->withPivot('quantite')
-            ->withTimestamps();
-    }*/
-    public function unites()
-    {
-        return $this->belongsToMany(Unite::class, 'stock_unite')
-            ->using(StockUnite::class)
-            ->withPivot('quantite')
-            ->withTimestamps();
+        return $this->hasMany(MouvementStock::class);
     }
 }

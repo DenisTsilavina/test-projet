@@ -11,13 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('commande_lignes', function (Blueprint $table) {
+
+        Schema::create('fournisseurs', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('commande_id')->constrained()->onDelete('cascade');
-            $table->enum('type', ['ingredient', 'main_oeuvre']);
-            $table->string('libelle');
-            $table->integer('quantite')->default(1);
-            $table->decimal('prix_unitaire', 10, 2);
+            $table->string('nom');
+            $table->string('contact')->nullable();
+            $table->string('telephone')->nullable();
+            $table->string('email')->nullable();
+            $table->text('adresse')->nullable();
             $table->timestamps();
         });
     }
@@ -27,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('commande_lignes');
+        Schema::dropIfExists('fournisseurs');
     }
 };

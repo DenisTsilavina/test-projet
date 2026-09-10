@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Description extends Model
 {
+
     use HasFactory;
 
     protected $fillable = [
@@ -34,17 +35,20 @@ class Description extends Model
     }
 
     /**
-     * Les sous-catégories de cette description.
+     * CHANGEMENT : sousCategories() (pluriel, hasMany) -> sousCategorie()
+     * (singulier, hasOne). Chaque description porte une seule sous-catégorie
+     * (relation 1-1 via description_id sur sous_categories), comme utilisé
+     * partout ailleurs dans VenteController et Vente.php.
      */
-    public function sousCategories()
+    public function sousCategorie()
     {
-        return $this->hasMany(SousCategory::class, 'description_id');
+        return $this->hasOne(SousCategory::class, 'description_id');
     }
 
     /**
      * Les ventes liées à cette description.
      */
-    public function ventes()
+    public function vente()
     {
         return $this->hasMany(Vente::class, 'description_id');
     }

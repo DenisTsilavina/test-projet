@@ -25,7 +25,7 @@
 
             <nav class="px-4 py-6 space-y-7">
                 <div class="space-y-1">
-                    <a href="{{ route('admin.vente.dashboard') }}"
+                    <a href="{{ route('admin.dashboard') }}"
                        class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.vente.dashboard') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
                         <i class="text-lg ti ti-layout-dashboard {{ request()->routeIs('admin.vente.dashboard') ? 'text-white' : 'text-slate-400 group-hover:text-slate-300' }}"></i>
                         Tableau de bord

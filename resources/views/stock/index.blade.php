@@ -57,7 +57,6 @@
                     {{-- ===== EN-TÊTE STOCK ===== --}}
                     <div class="flex flex-col sm:flex-row sm:items-center gap-3 px-5 py-4 bg-slate-50 border-b border-slate-200">
 
-                        {{-- Infos stock --}}
                         <div class="flex items-center gap-3 flex-1 min-w-0">
                             <div class="w-9 h-9 rounded-lg bg-indigo-100 flex items-center justify-center shrink-0">
                                 <i class="ti ti-building-warehouse text-indigo-600 text-lg"></i>
@@ -65,7 +64,7 @@
                             <div class="min-w-0">
                                 <h3 class="text-sm font-bold text-slate-900 truncate">{{ $stock->name_stock }}</h3>
                                 <p class="text-xs text-slate-400 flex items-center gap-1 flex-wrap">
-                                    <i class="ti ti-user-shield"></i> {{ $stock->persn_stock }}
+                                    <i class="ti ti-user-shield"></i> {{ $stock->responsable->name ?? '—' }}
                                     &bull;
                                     <i class="ti ti-calendar"></i>
                                     {{ \Carbon\Carbon::parse($stock->date_stock)->format('d/m/Y') }}
@@ -90,7 +89,6 @@
 
                         {{-- Actions stock --}}
                         <div class="flex items-center gap-1 shrink-0">
-                            {{-- Ajouter description (ouvre le modal) --}}
                             <button type="button"
                                     onclick="openModal('modal-desc-{{ $stock->id }}')"
                                     class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">
@@ -129,8 +127,8 @@
                                 <thead>
                                 <tr class="text-xs font-semibold text-slate-500 uppercase tracking-wider border-b border-slate-100 bg-slate-50/50">
                                     <th class="px-5 py-3">Description</th>
-                                    <th class="px-5 py-3">Sous-catégorie</th>
-                                    <th class="px-5 py-3 text-center">Origine</th>
+                                    <th class="px-5 py-3 text-center">Effectif</th>
+                                    <th class="px-5 py-3">Région</th>
                                     <th class="px-5 py-3 text-right">Prix achat</th>
                                     <th class="px-5 py-3 text-right">Prix vente</th>
                                     <th class="px-5 py-3 text-right">Actions</th>
@@ -145,13 +143,18 @@
                                         {{-- Description sans sous-catégorie --}}
                                         <tr class="hover:bg-slate-50/60 transition-colors">
                                             <td class="px-5 py-3.5 font-medium text-slate-800">{{ $desc->description }}</td>
-                                            <td class="px-5 py-3.5">
-                                                <a href="{{ route('souscategorie.create', $desc->id) }}"
-                                                   class="inline-flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 px-2 py-0.5 rounded-md transition-colors">
-                                                    <i class="ti ti-plus"></i> Ajouter sous-cat.
-                                                </a>
-                                            </td>
                                             <td class="px-5 py-3.5 text-center font-semibold text-slate-700">{{ $desc->effectif }}</td>
+                                            <td class="px-5 py-3.5 text-slate-600">
+                                                {{ $desc->region }}
+                                                {{-- CHANGEMENT : ouvre le modal d'enregistrement de
+                                                     sous-catégorie ci-dessous, au lieu de rediriger
+                                                     vers une page séparée. --}}
+                                                <button type="button"
+                                                        onclick="openModal('modal-souscat-{{ $desc->id }}')"
+                                                        class="ml-2 inline-flex items-center gap-1 text-xs text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-100 px-2 py-0.5 rounded-md transition-colors">
+                                                    <i class="ti ti-plus"></i> Ajouter prix
+                                                </button>
+                                            </td>
                                             <td class="px-5 py-3.5 text-right text-slate-300 text-xs">—</td>
                                             <td class="px-5 py-3.5 text-right text-slate-300 text-xs">—</td>
                                             <td class="px-5 py-3.5 text-right">
@@ -172,26 +175,21 @@
                                         </tr>
 
                                     @else
-                                        {{-- Description avec sous-catégories --}}
+                                        {{-- Description avec sous-catégorie(s) de prix --}}
                                         @foreach ($subCats as $i => $subCat)
                                             <tr class="hover:bg-slate-50/60 transition-colors">
                                                 <td class="px-5 py-3.5 font-medium text-slate-800">
                                                     @if ($i === 0)
                                                         {{ $desc->description }}
                                                         @if ($subCats->count() > 1)
-                                                            <span class="ml-1 text-xs text-slate-400 font-normal">({{ $subCats->count() }})</span>
+                                                            <span class="ml-1 text-xs text-slate-400 font-normal">({{ $subCats->count() }} tarifs)</span>
                                                         @endif
                                                     @else
-                                                        <span class="text-slate-300 pl-3 border-l-2 border-slate-100 text-xs italic">↳</span>
+                                                        <span class="text-slate-300 pl-3 border-l-2 border-slate-100 text-xs italic">↳ Tarif {{ $i + 1 }}</span>
                                                     @endif
                                                 </td>
-                                                <td class="px-5 py-3.5">
-                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs font-semibold rounded-md">
-                                            <i class="ti ti-tag text-indigo-400 text-xs"></i>
-                                            {{ $subCat->stock_categorie }}
-                                        </span>
-                                                </td>
-                                                <td class="px-5 py-3.5 text-center font-semibold text-slate-700">{{ $desc->region }}</td>
+                                                <td class="px-5 py-3.5 text-center font-semibold text-slate-700">{{ $desc->effectif }}</td>
+                                                <td class="px-5 py-3.5 text-slate-600">{{ $desc->region }}</td>
                                                 <td class="px-5 py-3.5 text-right text-slate-500 tabular-nums text-xs">
                                                     {{ $subCat->prix_achat ? number_format($subCat->prix_achat, 0, ',', ' ') . ' Ar' : '—' }}
                                                 </td>
@@ -202,10 +200,12 @@
                                                 <td class="px-5 py-3.5 text-right">
                                                     <div class="flex items-center justify-end gap-1">
                                                         @if ($i === 0)
-                                                            <a href="{{ route('souscategorie.create', $desc->id) }}"
-                                                               class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">
+                                                            {{-- CHANGEMENT : ouvre le modal au lieu du lien vers la page --}}
+                                                            <button type="button"
+                                                                    onclick="openModal('modal-souscat-{{ $desc->id }}')"
+                                                                    class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-lg transition-colors">
                                                                 <i class="ti ti-plus"></i>
-                                                            </a>
+                                                            </button>
                                                         @endif
                                                         <a href="{{ route('souscategorie.edit', $subCat->id) }}"
                                                            class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-amber-600 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors">
@@ -245,14 +245,11 @@
                      class="fixed inset-0 z-50 hidden items-center justify-center p-4"
                      role="dialog" aria-modal="true">
 
-                    {{-- Overlay --}}
                     <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
                          onclick="closeModal('modal-desc-{{ $stock->id }}')"></div>
 
-                    {{-- Boîte --}}
                     <div class="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
 
-                        {{-- Header modal --}}
                         <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
                             <div class="flex items-center gap-2">
                                 <div class="w-7 h-7 rounded-lg bg-indigo-100 flex items-center justify-center">
@@ -269,12 +266,10 @@
                             </button>
                         </div>
 
-                        {{-- Formulaire --}}
                         <form action="{{ route('description.store') }}" method="POST" class="px-6 py-5 space-y-4">
                             @csrf
                             <input type="hidden" name="stock_id" value="{{ $stock->id }}">
 
-                            {{-- Description --}}
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1.5">
                                     Description <span class="text-rose-500">*</span>
@@ -289,14 +284,13 @@
                                 @enderror
                             </div>
 
-                            {{-- region d'origine --}}
                             <div>
                                 <label class="block text-sm font-semibold text-slate-700 mb-1.5">
-                                    region d'origine <span class="text-rose-500">*</span>
+                                    Région d'origine <span class="text-rose-500">*</span>
                                 </label>
                                 <input type="text" name="region"
                                        value="{{ old('region') }}"
-                                       placeholder="region d'origine, ex:vakinakaratra"
+                                       placeholder="Ex: Vakinankaratra"
                                        class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900"
                                        required>
                                 @error('region')
@@ -304,7 +298,6 @@
                                 @enderror
                             </div>
 
-                            {{-- Boutons --}}
                             <div class="flex items-center gap-3 pt-2 border-t border-slate-100">
                                 <button type="submit"
                                         class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors">
@@ -319,6 +312,83 @@
                         </form>
                     </div>
                 </div>
+
+                {{-- ===== MODAL SOUS-CATÉGORIE (prix) — un par description ===== --}}
+                {{-- CHANGEMENT : nouveau modal, un par description, pour
+                     enregistrer directement une sous-catégorie (prix_achat /
+                     prix_vente) sans quitter la page. Poste vers
+                     route('souscategorie.store'), qui n'attend que
+                     description_id + prix_achat + prix_vente (schéma
+                     corrigé : stock_categorie retiré). --}}
+                @foreach ($descriptions as $desc)
+                    <div id="modal-souscat-{{ $desc->id }}"
+                         class="fixed inset-0 z-50 hidden items-center justify-center p-4"
+                         role="dialog" aria-modal="true">
+
+                        <div class="absolute inset-0 bg-slate-900/40 backdrop-blur-sm"
+                             onclick="closeModal('modal-souscat-{{ $desc->id }}')"></div>
+
+                        <div class="relative w-full max-w-md bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+
+                            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 bg-slate-50">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-7 h-7 rounded-lg bg-emerald-100 flex items-center justify-center">
+                                        <i class="ti ti-tag text-emerald-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="text-sm font-bold text-slate-900">Nouvelle sous-catégorie</h3>
+                                        <p class="text-xs text-slate-400">{{ $desc->description }}</p>
+                                    </div>
+                                </div>
+                                <button type="button" onclick="closeModal('modal-souscat-{{ $desc->id }}')"
+                                        class="w-7 h-7 flex items-center justify-center rounded-lg hover:bg-slate-200 text-slate-400 hover:text-slate-600 transition-colors">
+                                    <i class="ti ti-x text-sm"></i>
+                                </button>
+                            </div>
+
+                            <form action="{{ route('souscategorie.store') }}" method="POST" class="px-6 py-5 space-y-4">
+                                @csrf
+                                <input type="hidden" name="description_id" value="{{ $desc->id }}">
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">Prix achat</label>
+                                    <input type="number" step="0.01" min="0" name="prix_achat"
+                                           value="{{ old('prix_achat') }}"
+                                           placeholder="0.00"
+                                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900">
+                                    @error('prix_achat')
+                                    <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                                        Prix vente <span class="text-rose-500">*</span>
+                                    </label>
+                                    <input type="number" step="0.01" min="0" name="prix_vente"
+                                           value="{{ old('prix_vente') }}"
+                                           placeholder="0.00"
+                                           class="w-full px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 text-slate-900">
+                                    @error('prix_vente')
+                                    <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+
+                                <div class="flex items-center gap-3 pt-2 border-t border-slate-100">
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors">
+                                        <i class="ti ti-device-floppy"></i> Enregistrer
+                                    </button>
+                                    <button type="button"
+                                            onclick="closeModal('modal-souscat-{{ $desc->id }}')"
+                                            class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-xl shadow-sm transition-colors">
+                                        Annuler
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                @endforeach
 
             @endforeach
         @endif
@@ -343,7 +413,6 @@
             document.body.classList.remove('overflow-hidden');
         }
 
-        // Fermer avec Echap
         document.addEventListener('keydown', function (e) {
             if (e.key === 'Escape') {
                 document.querySelectorAll('[id^="modal-"]').forEach(m => {

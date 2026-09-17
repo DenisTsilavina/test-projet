@@ -52,15 +52,15 @@ class MouvementStock extends Model
         ?string $remarque = null
     ): self {
         $mouvement = self::create([
-            'stock_id'        => $stock->id,
-            'type_mouvement'  => $typeMouvement,
-            'reference_type'  => $referenceType,
-            'reference_id'    => $referenceId,
-            'quantite'        => $quantite,
-            'prix_unitaire'   => $prixUnitaire,
-            'date_mouvement'  => now(),
-            'utilisateur_id'  => auth()->id(),
-            'remarque'        => $remarque,
+            'stock_id' => $stock->id,
+            'type_mouvement' => $typeMouvement,
+            'reference_type' => $referenceType,
+            'reference_id' => $referenceId,
+            'quantite' => $quantite,
+            'prix_unitaire' => $prixUnitaire,
+            'date_mouvement' => now(),
+            'utilisateur_id' => auth()->id(),
+            'remarque' => $remarque,
         ]);
 
         if ($typeMouvement === 'entree') {

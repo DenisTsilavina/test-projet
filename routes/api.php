@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -26,3 +27,10 @@ Route::middleware('auth:sanctum')->prefix('client')->group(function () {
     Route::post('/logout', [ClientController::class, 'logout']);
 });
 Route::get('/client/home', [UserController::class, 'homeData']);
+Route::get('/commandes', [CommandeController::class, 'index']);
+Route::post('/commandes', [CommandeController::class, 'store']);
+Route::get('/commandes/{commande}', [CommandeController::class, 'show']);
+Route::put('/commandes/{commande}', [CommandeController::class, 'update']);
+Route::post('/commandes/{commande}/approuver', [CommandeController::class, 'approuver']);
+Route::post('/commandes/{commande}/refuser', [CommandeController::class, 'refuser']);
+Route::delete('/commandes/{commande}', [CommandeController::class, 'destroy']);

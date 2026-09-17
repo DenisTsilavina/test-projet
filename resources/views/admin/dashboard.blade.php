@@ -37,7 +37,7 @@
                 </div>
                 <div class="min-w-0">
                     <p class="text-xs font-semibold tracking-wider uppercase text-slate-400">Ventes enregistrées</p>
-                    <p class="text-2xl font-bold text-slate-900 tabular-nums">{{ number_format($totalVentes, 0, ',', ' ') }}</p>
+                    {{--}}<p class="text-2xl font-bold text-slate-900 tabular-nums">{{ number_format($totalVentes, 0, ',', ' ') }}</p>--}}
                 </div>
             </div>
 

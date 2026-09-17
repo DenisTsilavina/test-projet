@@ -9,9 +9,13 @@ use Illuminate\Http\Request;
 
 class DescriptionController extends Controller
 {
+    // CHANGEMENT : cette méthode n'est référencée par aucune route
+    // (routes/admin.php pointe vers StockControllers::index()). Corrigée
+    // quand même pour ne pas laisser de code mort trompeur avec une
+    // relation inexistante ('unites' pluriel -> 'unite' singulier).
     public function index()
     {
-        $stocks = Stock::with(['descriptions.sousCategorie', 'unites'])->get();
+        $stocks = Stock::with(['descriptions.sousCategorie', 'unite'])->get();
 
         return view('stock.index', compact('stocks'));
     }
@@ -29,10 +33,13 @@ class DescriptionController extends Controller
 
     public function store(Request $request)
     {
+        // CHANGEMENT : ajout de 'effectif', envoyé par le formulaire modal
+        // mais absent jusque-là — il était silencieusement ignoré.
         $validated = $request->validate([
-            'stock_id'    => 'required|exists:stocks,id',
+            'stock_id' => 'required|exists:stocks,id',
             'description' => 'required|string|max:255',
-            'region'      => 'required|string|max:100',
+            'effectif' => 'nullable|integer|min:0',
+            'region' => 'required|string|max:100',
         ]);
 
         Description::create($validated);
@@ -51,9 +58,12 @@ class DescriptionController extends Controller
 
     public function update(Request $request, Description $description)
     {
+        // CHANGEMENT : idem, ajout de 'effectif' pour rester cohérent
+        // avec store() et le formulaire d'édition.
         $validated = $request->validate([
             'description' => 'required|string|max:255',
-            'region'      => 'required|string|max:100',
+            'effectif' => 'nullable|integer|min:0',
+            'region' => 'required|string|max:100',
         ]);
 
         $description->update($validated);
@@ -85,13 +95,10 @@ class DescriptionController extends Controller
 
     public function storeSousCategorie(Request $request)
     {
-        // CHANGEMENT : 'stock_categorie' retiré — cette colonne n'existe plus
-        // dans `sous_categories`. La quantité disponible est désormais suivie
-        // uniquement via descriptions.effectif (voir VenteController).
         $validated = $request->validate([
             'description_id' => 'required|exists:descriptions,id',
-            'prix_achat'      => 'nullable|numeric|min:0',
-            'prix_vente'      => 'nullable|numeric|min:0',
+            'prix_achat' => 'nullable|numeric|min:0',
+            'prix_vente' => 'nullable|numeric|min:0',
         ]);
 
         SousCategory::create($validated);
@@ -110,7 +117,6 @@ class DescriptionController extends Controller
 
     public function updateSousCategorie(Request $request, SousCategory $sousCategory)
     {
-        // CHANGEMENT : idem, 'stock_categorie' retiré du validate/update.
         $validated = $request->validate([
             'prix_achat' => 'nullable|numeric|min:0',
             'prix_vente' => 'nullable|numeric|min:0',

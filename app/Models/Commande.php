@@ -11,6 +11,7 @@ class Commande extends Model
 
     protected $fillable = [
         'client_id',
+        'reference',
         'date_commande',
         'date_besoin',
         'date_livraison',
@@ -25,9 +26,6 @@ class Commande extends Model
         'date_livraison' => 'date',
     ];
 
-    /**
-     * Le client (User avec role CLIENT) qui a passé la commande.
-     */
     public function client()
     {
         return $this->belongsTo(User::class, 'client_id');
@@ -37,7 +35,6 @@ class Commande extends Model
     {
         return $this->hasMany(LigneCommande::class);
     }
-
 
     public function paiements()
     {
@@ -49,19 +46,66 @@ class Commande extends Model
         return $this->hasMany(Transport::class);
     }
 
-    /**
-     * Total deja paye pour cette commande.
-     */
     public function getMontantPayeAttribute(): int
     {
         return $this->paiements()->sum('montant');
     }
 
-    /**
-     * Reste a payer.
-     */
     public function getResteAPayerAttribute(): int
     {
         return max(0, $this->total - $this->montant_paye);
+    }
+
+    /**
+     * Vérifie que les lignes DÉJÀ ENREGISTRÉES de cette commande sont
+     * encore réalisables avec le stock actuel (utilisé avant validation
+     * par l'admin, car le stock a pu bouger depuis la demande du client).
+     */
+    public function verifierDisponibilite(): array
+    {
+        $lignes = $this->lignes()->get()->map(fn ($l) => [
+            'produit_id' => $l->produit_id,
+            'quantite'   => $l->quantite,
+        ])->toArray();
+
+        return self::verifierDisponibiliteLignes($lignes);
+    }
+
+    /**
+     * Version statique réutilisable AVANT la création d'une commande
+     * (quand on n'a encore que le tableau brut des lignes du formulaire,
+     * pas d'instance de Commande).
+     */
+    public static function verifierDisponibiliteLignes(array $lignes): array
+    {
+        $errors = [];
+
+        foreach ($lignes as $i => $ligne) {
+            $produit = Produit::with(['produitStock.stock', 'produitFini.compositions.stock'])
+                ->find($ligne['produit_id']);
+
+            if (!$produit) {
+                $errors["lignes.$i.produit_id"] = 'Produit introuvable.';
+                continue;
+            }
+
+            $quantiteDemandee = (int) $ligne['quantite'];
+
+            if ($produit->estStock()) {
+                $dispo = $produit->produitStock->stock->quantite ?? 0;
+
+                if ($quantiteDemandee > $dispo) {
+                    $errors["lignes.$i.quantite"] =
+                        "Stock insuffisant pour « {$produit->nom} ». Disponible : {$dispo}.";
+                }
+            } elseif ($produit->estFini()) {
+                if (!$produit->produitFini->stockSuffisantPour($quantiteDemandee)) {
+                    $errors["lignes.$i.quantite"] =
+                        "Ingrédients insuffisants pour fabriquer « {$produit->nom} » en quantité {$quantiteDemandee}.";
+                }
+            }
+        }
+
+        return $errors;
     }
 }

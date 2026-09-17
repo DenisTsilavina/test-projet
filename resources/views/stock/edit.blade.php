@@ -26,50 +26,47 @@
                 @error('name_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            <div class="mb-3">
-                <label class="form-label">Description</label>
-                <textarea name="description_stock" class="form-control @error('description_stock') is-invalid @enderror"
-                          rows="3">{{ old('description_stock', $stock->description_stock) }}</textarea>
-                @error('description_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
-            </div>
+            {{-- CHANGEMENT : description_stock supprimé, cette colonne n'existe
+                 plus sur `stocks`. Remplacé par les vrais champs du schéma
+                 actuel : unite_id, quantite, prix_achat_moyen. --}}
 
             <div class="mb-3">
                 <label class="form-label">Date <span class="text-danger">*</span></label>
-                {{-- On formate pour l'input date (Y-m-d) même si le cast affiche d/m/Y --}}
                 <input type="date" name="date_stock" class="form-control @error('date_stock') is-invalid @enderror"
                        value="{{ old('date_stock', $stock->getRawOriginal('date_stock') ? \Carbon\Carbon::parse($stock->getRawOriginal('date_stock'))->format('Y-m-d') : '') }}" required>
                 @error('date_stock') <div class="invalid-feedback">{{ $message }}</div> @enderror
             </div>
 
-            <h5 class="mt-4">Unités &amp; Quantités</h5>
-            <table class="table table-bordered align-middle">
-                <thead class="table-light">
-                <tr>
-                    <th>Unité</th>
-                    <th>Symbole</th>
-                    <th style="width:180px">Quantité</th>
-                </tr>
-                </thead>
-                <tbody>
-                @foreach ($unites as $unite)
-                    @php
-                        // Récupérer la quantité actuelle pour cette unité (si elle existe)
-                        $pivot = $stock->unites->firstWhere('id', $unite->id);
-                        $currentQty = $pivot ? $pivot->pivot->quantite : 0;
-                    @endphp
-                    <tr>
-                        <td>{{ $unite->nom }}</td>
-                        <td><span class="badge bg-secondary">{{ $unite->symbole }}</span></td>
-                        <td>
-                            <input type="number" step="0.01" min="0"
-                                   name="unites[{{ $unite->id }}]"
-                                   class="form-control form-control-sm"
-                                   value="{{ old('unites.' . $unite->id, $currentQty) }}">
-                        </td>
-                    </tr>
-                @endforeach
-                </tbody>
-            </table>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Unité <span class="text-danger">*</span></label>
+                    <select name="unite_id" class="form-select @error('unite_id') is-invalid @enderror" required>
+                        <option value="">-- Choisir --</option>
+                        @foreach ($unites as $unite)
+                            <option value="{{ $unite->id }}" {{ old('unite_id', $stock->unite_id) == $unite->id ? 'selected' : '' }}>
+                                {{ $unite->nom }} ({{ $unite->symbole }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('unite_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Quantité <span class="text-danger">*</span></label>
+                    <input type="number" step="0.01" min="0" name="quantite"
+                           class="form-control @error('quantite') is-invalid @enderror"
+                           value="{{ old('quantite', $stock->quantite) }}" required>
+                    @error('quantite') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Prix d'achat moyen</label>
+                    <input type="number" min="0" name="prix_achat_moyen"
+                           class="form-control @error('prix_achat_moyen') is-invalid @enderror"
+                           value="{{ old('prix_achat_moyen', $stock->prix_achat_moyen) }}">
+                    @error('prix_achat_moyen') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                </div>
+            </div>
 
             <div class="d-flex gap-2 mt-3">
                 <button type="submit" class="btn btn-primary">Mettre à jour</button>

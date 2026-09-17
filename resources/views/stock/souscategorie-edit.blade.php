@@ -7,7 +7,6 @@
 @section('content')
     <div class="max-w-xl mx-auto">
 
-        {{-- Fil d'ariane --}}
         <nav class="flex items-center gap-2 text-xs text-slate-400 mb-6">
             <a href="{{ route('stock.index') }}" class="hover:text-indigo-600 transition-colors">Stocks</a>
             <i class="ti ti-chevron-right text-slate-300"></i>
@@ -20,18 +19,19 @@
 
         <div class="bg-white border border-slate-200 rounded-2xl shadow-sm overflow-hidden">
 
-            {{-- Header --}}
             <div class="flex items-center gap-3 px-6 py-4 bg-slate-50 border-b border-slate-200">
                 <div class="w-9 h-9 rounded-lg bg-amber-100 flex items-center justify-center">
                     <i class="ti ti-tag text-amber-600 text-lg"></i>
                 </div>
                 <div>
                     <h2 class="text-sm font-bold text-slate-900">Modifier la sous-catégorie</h2>
-                    <p class="text-xs text-slate-400">{{ $sousCategory->stock_categorie }}</p>
+                    {{-- CHANGEMENT : stock_categorie n'existe plus. On affiche
+                         plutôt le nom de la description liée, qui identifie
+                         déjà cette sous-catégorie de façon unique (1-1). --}}
+                    <p class="text-xs text-slate-400">{{ $sousCategory->description->description }}</p>
                 </div>
             </div>
 
-            {{-- Erreurs --}}
             @if ($errors->any())
                 <div class="flex items-start gap-3 mx-6 mt-5 p-4 border rounded-xl bg-rose-50 border-rose-200 text-rose-800">
                     <i class="ti ti-alert-circle text-rose-600 mt-0.5 shrink-0"></i>
@@ -43,27 +43,14 @@
                 </div>
             @endif
 
-            {{-- Formulaire --}}
             <form action="{{ route('souscategorie.update', $sousCategory->id) }}" method="POST" class="px-6 py-6 space-y-5">
                 @csrf
                 @method('PUT')
 
-                {{-- Nom catégorie --}}
-                <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">
-                        Nom de la sous-catégorie <span class="text-rose-500">*</span>
-                    </label>
-                    <input type="text" name="stock_categorie"
-                           value="{{ old('stock_categorie', $sousCategory->stock_categorie) }}"
-                           class="w-full px-3 py-2 border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
-                              @error('stock_categorie') border-rose-500 bg-rose-50/30 @else border-slate-200 @enderror text-slate-900"
-                           required>
-                    @error('stock_categorie')
-                    <p class="mt-1 text-xs text-rose-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                {{-- CHANGEMENT : champ "Nom de la sous-catégorie" (stock_categorie)
+                     supprimé — cette colonne n'existe pas, et une sous-catégorie
+                     est déjà identifiée par sa description liée (1-1). --}}
 
-                {{-- Prix côte à côte --}}
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1.5">Prix d'achat</label>
@@ -88,14 +75,12 @@
                     </div>
                 </div>
 
-                {{-- Marge --}}
                 <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-500 flex items-center gap-2">
                     <i class="ti ti-calculator text-indigo-400"></i>
                     Marge estimée :
                     <span id="marge-display" class="font-bold text-slate-700">—</span>
                 </div>
 
-                {{-- Boutons --}}
                 <div class="flex items-center gap-3 pt-4 border-t border-slate-100">
                     <button type="submit"
                             class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors">
@@ -129,7 +114,6 @@
             }
         }
 
-        // Initialiser avec les valeurs existantes
         updateMarge();
         achat?.addEventListener('input', updateMarge);
         vente?.addEventListener('input', updateMarge);

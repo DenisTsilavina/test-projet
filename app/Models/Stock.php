@@ -12,9 +12,10 @@ class Stock extends Model
     protected $fillable = [
         'name_stock',
         'date_stock',
-        'user_id',
+        'responsable_id',
         'unite_id',
         'quantite',
+        'prix_achat_moyen',
     ];
 
     protected $casts = [
@@ -22,18 +23,11 @@ class Stock extends Model
         'quantite'   => 'decimal:2',
     ];
 
-    /**
-     * CHANGEMENT : un stock appartient à une seule unité (belongsTo),
-     * remplace l'ancienne relation belongsToMany avec table pivot.
-     */
     public function unite()
     {
         return $this->belongsTo(Unite::class);
     }
 
-    /**
-     * CHANGEMENT : persn_stock (string libre) -> relation vers users.id
-     */
     public function responsable()
     {
         return $this->belongsTo(User::class, 'responsable_id');

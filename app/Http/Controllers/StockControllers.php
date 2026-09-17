@@ -26,7 +26,6 @@ class StockControllers extends Controller
 
     public function index()
     {
-        // CHANGEMENT : 'unites' (many-to-many) -> 'unite' (belongsTo, une seule unité par stock)
         $stocks = Stock::with(['unite', 'descriptions'])->get();
 
         return view('stock.index', compact('stocks'));
@@ -41,21 +40,22 @@ class StockControllers extends Controller
 
     public function store(Request $request)
     {
-        // CHANGEMENT : 'unites' (tableau id => quantite) -> 'unite_id' + 'quantite' simples,
-        // puisqu'un stock n'appartient plus qu'à une seule unité.
+        // CHANGEMENT : ajout de prix_achat_moyen, présent dans le formulaire
         $validated = $request->validate([
             'name_stock' => 'required|string|max:255|unique:stocks,name_stock',
             'date_stock' => 'nullable|date',
-            'unite_id'   => 'required|exists:unites,id',
-            'quantite'   => 'nullable|numeric|min:0',
+            'unite_id' => 'required|exists:unites,id',
+            'quantite' => 'nullable|numeric|min:0',
+            'prix_achat_moyen' => 'nullable|integer|min:0',
         ]);
 
         $stock = Stock::create([
-            'name_stock'     => $validated['name_stock'],
-            'date_stock'     => $validated['date_stock'] ?? now(),
+            'name_stock' => $validated['name_stock'],
+            'date_stock' => $validated['date_stock'] ?? now(),
             'responsable_id' => auth()->id(),
-            'unite_id'       => $validated['unite_id'],
-            'quantite'       => $validated['quantite'] ?? 0,
+            'unite_id' => $validated['unite_id'],
+            'quantite' => $validated['quantite'] ?? 0,
+            'prix_achat_moyen' => $validated['prix_achat_moyen'] ?? null,
         ]);
 
         return redirect()->route('stock.index')
@@ -79,18 +79,21 @@ class StockControllers extends Controller
 
     public function update(Request $request, Stock $stock)
     {
+        // CHANGEMENT : ajout de prix_achat_moyen, même raison que store().
         $validated = $request->validate([
             'name_stock' => 'required|string|max:255|unique:stocks,name_stock,' . $stock->id,
             'date_stock' => 'nullable|date',
-            'unite_id'   => 'required|exists:unites,id',
-            'quantite'   => 'nullable|numeric|min:0',
+            'unite_id' => 'required|exists:unites,id',
+            'quantite' => 'nullable|numeric|min:0',
+            'prix_achat_moyen' => 'nullable|integer|min:0',
         ]);
 
         $stock->update([
             'name_stock' => $validated['name_stock'],
             'date_stock' => $validated['date_stock'] ?? $stock->date_stock,
-            'unite_id'   => $validated['unite_id'],
-            'quantite'   => $validated['quantite'] ?? $stock->quantite,
+            'unite_id' => $validated['unite_id'],
+            'quantite' => $validated['quantite'] ?? $stock->quantite,
+            'prix_achat_moyen' => $validated['prix_achat_moyen'] ?? $stock->prix_achat_moyen,
             // Décommenter pour permettre le changement de responsable :
             // 'responsable_id' => $request->input('responsable_id', $stock->responsable_id),
         ]);
@@ -107,8 +110,6 @@ class StockControllers extends Controller
 
     public function destroy(Stock $stock)
     {
-        // CHANGEMENT : plus besoin de detach() (pas de pivot), la FK unite_id
-        // est simplement supprimée avec le stock.
         $stock->descriptions()->delete();
         $stock->delete();
 

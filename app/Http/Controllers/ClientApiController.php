@@ -18,15 +18,15 @@ class ClientApiController extends Controller
             ->get();
 
         $stats = [
-            'total_commandes'    => Commande::where('user_id', $user->id)->count(),
+            'total_commandes' => Commande::where('user_id', $user->id)->count(),
             'commandes_en_cours' => Commande::where('user_id', $user->id)->where('status', 'en_cours')->count(),
-            'commandes_livrees'  => Commande::where('user_id', $user->id)->where('status', 'livre')->count(),
-            'total_depense'      => Commande::where('user_id', $user->id)->where('status', 'livre')->sum('montant_total'),
+            'commandes_livrees' => Commande::where('user_id', $user->id)->where('status', 'livre')->count(),
+            'total_depense' => Commande::where('user_id', $user->id)->where('status', 'livre')->sum('montant_total'),
         ];
 
         return response()->json([
-            'user'      => $user,
-            'stats'     => $stats,
+            'user' => $user,
+            'stats' => $stats,
             'commandes' => $commandes,
         ]);
     }

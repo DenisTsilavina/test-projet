@@ -3,11 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Model;
 
-class LigneCommande
+class LigneCommande extends Model
 {
     use HasFactory;
+
     protected $table = 'lignes_commandes';
 
     protected $fillable = [
@@ -65,6 +66,42 @@ class LigneCommande
                 referenceId: $this->commande_id,
                 quantite: $ligneRecette->quantite_necessaire * $this->quantite,
                 remarque: "Commande #{$this->commande_id} — {$produit->nom} (composition)"
+            );
+        }
+    }
+
+    /**
+     * Inverse de appliquerSurStock() : utilisé quand une commande est
+     * annulée, pour remettre le stock qui avait été retiré.
+     */
+    public function annulerSurStock(): void
+    {
+        $produit = $this->produit;
+
+        if ($this->type_produit === 'stock') {
+            $stock = $produit->produitStock->stock;
+
+            MouvementStock::enregistrer(
+                stock: $stock,
+                typeMouvement: 'entree',
+                referenceType: 'ajustement',
+                referenceId: $this->commande_id,
+                quantite: $this->quantite,
+                prixUnitaire: $this->prix_unitaire,
+                remarque: "Annulation commande #{$this->commande_id} — {$produit->nom}"
+            );
+
+            return;
+        }
+
+        foreach ($produit->produitFini->compositions as $ligneRecette) {
+            MouvementStock::enregistrer(
+                stock: $ligneRecette->stock,
+                typeMouvement: 'entree',
+                referenceType: 'ajustement',
+                referenceId: $this->commande_id,
+                quantite: $ligneRecette->quantite_necessaire * $this->quantite,
+                remarque: "Annulation commande #{$this->commande_id} — {$produit->nom} (composition)"
             );
         }
     }

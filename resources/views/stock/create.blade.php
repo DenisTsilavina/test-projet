@@ -7,12 +7,10 @@
 @section('content')
     <div class="max-w-3xl mx-auto">
 
-        {{-- En-tête --}}
         <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
             <h2 class="text-xl font-bold text-slate-900">Ajouter un nouveau stock</h2>
         </div>
 
-        {{-- Erreurs de validation --}}
         @if ($errors->any())
             <div class="flex items-start gap-3 p-4 mb-6 border rounded-xl bg-rose-50 border-rose-200 text-rose-800 shadow-sm">
                 <i class="text-lg ti ti-alert-circle text-rose-600 mt-0.5"></i>
@@ -38,17 +36,13 @@
                 <input type="text" name="name_stock"
                        class="w-full px-3 py-2 border rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
                               @error('name_stock') border-rose-500 bg-rose-50/30 text-rose-900 @else border-slate-200 text-slate-900 @enderror"
-                       value="{{ old('name_stock') }}" required placeholder="Ex: Stock Central A">
+                       value="{{ old('name_stock') }}" required placeholder="Ex: Farine">
                 @error('name_stock')
                 <p class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
                 @enderror
             </div>
 
-            {{-- Responsable --}}
-            {{-- CHANGEMENT : plus de champ caché "persn_stock" à poster — le
-                 contrôleur assigne désormais responsable_id = auth()->id()
-                 automatiquement (FK vers users.id). Ce bloc est purement
-                 informatif, rien n'est envoyé en POST ici. --}}
+            {{-- Responsable (informatif uniquement, assigné auto par le contrôleur) --}}
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1.5">Responsable du stock</label>
                 <div class="relative rounded-lg shadow-sm">
@@ -77,63 +71,55 @@
                 @enderror
             </div>
 
-            {{-- ===================== UNITÉS EN CARDS ===================== --}}
-            <div class="pt-4 border-t border-slate-100">
-                <h3 class="text-md font-bold text-slate-900 mb-1 flex items-center gap-2">
-                    <i class="text-indigo-500 ti ti-list-details"></i> Unités &amp; Quantités initiales
-                </h3>
-                <p class="text-xs text-slate-400 mb-4">Cochez les unités concernées et renseignez la quantité de départ.</p>
+            {{-- CHANGEMENT : un stock = UNE unité + UNE quantité + un prix
+                 d'achat moyen. Plus de cases à cocher multiples. --}}
+            <div class="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                        Unité <span class="text-rose-500">*</span>
+                    </label>
+                    <select name="unite_id"
+                            class="w-full px-3 py-2 border rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
+                                   @error('unite_id') border-rose-500 bg-rose-50/30 text-rose-900 @else border-slate-200 text-slate-900 @enderror"
+                            required>
+                        <option value="">-- Choisir --</option>
+                        @foreach ($unites as $unite)
+                            <option value="{{ $unite->id }}" {{ old('unite_id') == $unite->id ? 'selected' : '' }}>
+                                {{ $unite->nom }} ({{ $unite->symbole }})
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('unite_id')
+                    <p class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    @foreach ($unites as $unite)
-                        @php
-                            $is_checked = old('unites_checked.' . $unite->id) ? true : false;
-                        @endphp
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                        Quantité initiale <span class="text-rose-500">*</span>
+                    </label>
+                    <input type="number" step="0.01" min="0" name="quantite"
+                           class="w-full px-3 py-2 border rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
+                                  @error('quantite') border-rose-500 bg-rose-50/30 text-rose-900 @else border-slate-200 text-slate-900 @enderror"
+                           value="{{ old('quantite', 0) }}" required>
+                    @error('quantite')
+                    <p class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                        <label class="unit-card relative flex flex-col gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-150 select-none
-                                      {{ $is_checked
-                                            ? 'border-indigo-500 bg-indigo-50/60 shadow-sm'
-                                            : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50/50' }}"
-                               data-id="{{ $unite->id }}">
-
-                            <input type="checkbox"
-                                   name="unites_checked[{{ $unite->id }}]"
-                                   value="1"
-                                   class="unit-checkbox sr-only"
-                                {{ $is_checked ? 'checked' : '' }}>
-
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-2">
-                                    <span class="unit-indicator flex items-center justify-center w-5 h-5 rounded-full border-2 transition-all duration-150
-                                                 {{ $is_checked
-                                                        ? 'border-indigo-500 bg-indigo-500'
-                                                        : 'border-slate-300 bg-white' }}">
-                                        <i class="ti ti-check text-white text-xs {{ $is_checked ? '' : 'opacity-0' }}"></i>
-                                    </span>
-                                    <span class="font-semibold text-sm text-slate-800">{{ $unite->nom }}</span>
-                                </div>
-                                <span class="px-2 py-0.5 text-xs font-bold tracking-widest bg-slate-100 border border-slate-200 text-slate-500 rounded-md">
-                                    {{ $unite->symbole }}
-                                </span>
-                            </div>
-
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-medium text-slate-500 whitespace-nowrap">Qté initiale</span>
-                                <input type="number" step="0.01" min="0"
-                                       name="unites[{{ $unite->id }}]"
-                                       class="unit-quantity flex-1 px-3 py-1.5 text-right border rounded-lg text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all
-                                              {{ $is_checked
-                                                    ? 'border-slate-300 text-slate-900 bg-white'
-                                                    : 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed' }}"
-                                       value="{{ old('unites.' . $unite->id, 0) }}"
-                                       {{ $is_checked ? '' : 'disabled' }}
-                                       onclick="event.preventDefault()">
-                            </div>
-                        </label>
-                    @endforeach
+                <div>
+                    <label class="block text-sm font-semibold text-slate-700 mb-1.5">
+                        Prix d'achat moyen
+                    </label>
+                    <input type="number" min="0" name="prix_achat_moyen"
+                           class="w-full px-3 py-2 border rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
+                                  @error('prix_achat_moyen') border-rose-500 bg-rose-50/30 text-rose-900 @else border-slate-200 text-slate-900 @enderror"
+                           value="{{ old('prix_achat_moyen') }}" placeholder="Ar">
+                    @error('prix_achat_moyen')
+                    <p class="mt-1 text-xs text-rose-600 font-medium">{{ $message }}</p>
+                    @enderror
                 </div>
             </div>
-            {{-- ==================== FIN UNITÉS ========================= --}}
 
             {{-- Boutons d'actions --}}
             <div class="flex items-center gap-3 pt-6 border-t border-slate-100">
@@ -148,53 +134,4 @@
             </div>
         </form>
     </div>
-
-    {{-- Script : toggle card --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.unit-card').forEach(card => {
-                card.addEventListener('click', function (e) {
-                    if (e.target.tagName === 'INPUT' && e.target.type === 'number') return;
-
-                    const checkbox  = card.querySelector('.unit-checkbox');
-                    const qtyInput  = card.querySelector('.unit-quantity');
-                    const indicator = card.querySelector('.unit-indicator');
-                    const icon      = indicator.querySelector('i');
-
-                    checkbox.checked = !checkbox.checked;
-                    const checked = checkbox.checked;
-
-                    card.classList.toggle('border-indigo-500', checked);
-                    card.classList.toggle('bg-indigo-50/60',   checked);
-                    card.classList.toggle('shadow-sm',         checked);
-                    card.classList.toggle('border-slate-200',  !checked);
-                    card.classList.toggle('bg-white',          !checked);
-
-                    indicator.classList.toggle('border-indigo-500', checked);
-                    indicator.classList.toggle('bg-indigo-500',     checked);
-                    indicator.classList.toggle('border-slate-300',  !checked);
-                    indicator.classList.toggle('bg-white',          !checked);
-                    icon.classList.toggle('opacity-0', !checked);
-
-                    qtyInput.disabled = !checked;
-                    qtyInput.classList.toggle('border-slate-300', checked);
-                    qtyInput.classList.toggle('text-slate-900',   checked);
-                    qtyInput.classList.toggle('bg-white',         checked);
-                    qtyInput.classList.toggle('border-slate-100', !checked);
-                    qtyInput.classList.toggle('text-slate-300',   !checked);
-                    qtyInput.classList.toggle('bg-slate-50',      !checked);
-                    qtyInput.classList.toggle('cursor-not-allowed', !checked);
-
-                    if (checked) {
-                        qtyInput.focus();
-                        qtyInput.select();
-                    } else {
-                        qtyInput.value = 0;
-                    }
-                });
-
-                card.querySelector('.unit-quantity').addEventListener('click', e => e.stopPropagation());
-            });
-        });
-    </script>
 @endsection

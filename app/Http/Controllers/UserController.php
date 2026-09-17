@@ -149,8 +149,8 @@ class UserController extends Controller
     public function adminDashboard()
     {
         $totalUsers  = User::count();
-        $totalVentes = \App\Models\Vente::count();
-        return view('admin.dashboard', compact('totalUsers', 'totalVentes'));
+       // $totalVentes = \App\Models\Vente::count();
+        return view('admin.dashboard', compact('totalUsers'));
     }
 
     /**

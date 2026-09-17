@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\AchatController;
+use App\Http\Controllers\ProduitController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VenteController;
@@ -11,14 +13,6 @@ use App\Http\Controllers\DescriptionController;
 |--------------------------------------------------------------------------
 | Routes Admin & Super Admin
 |--------------------------------------------------------------------------
-| Chargé depuis web.php via require, comme auth.php.
-|
-| CHANGEMENT : ce fichier regroupe désormais TOUTE la gestion admin —
-| utilisateurs, dashboard, ventes, commandes, ET stocks / descriptions /
-| sous-catégories (auparavant dans web.php). web.php ne garde plus que
-| les routes publiques, l'auth, et l'espace client (Vue SPA).
-| Les URLs elles-mêmes (/stock/..., /description/..., /souscategorie/...)
-| ne changent pas — seul l'endroit où elles sont déclarées change.
 */
 
 Route::prefix('admin/users')
@@ -64,21 +58,15 @@ Route::prefix('admin')
 |--------------------------------------------------------------------------
 | Gestion des Stocks & Sous-catégories
 |--------------------------------------------------------------------------
-| CHANGEMENT : déplacé depuis web.php. Le nom de route ('stock.', pas
-| 'admin.stock.') et les URLs ('/stock/...') restent inchangés pour ne
-| rien casser dans les vues existantes (route('stock.index') etc.) —
-| seule leur déclaration change de fichier.
 */
 Route::prefix('stock')
     ->middleware('auth')
     ->name('stock.')
     ->group(function () {
 
-        // Lecture : accessible à tout utilisateur connecté (ex: Vendeur).
         Route::get('/',              [StockControllers::class, 'index'])->name('index');
         Route::get('/inventaire',    [StockControllers::class, 'inventaire'])->name('inventaire');
 
-        // Écriture : réservée aux admins / super admins.
         Route::middleware('role:admin,super_admin')->group(function () {
             Route::get('/create',        [StockControllers::class, 'create'])->name('create');
             Route::post('/',             [StockControllers::class, 'store'])->name('store');
@@ -90,8 +78,6 @@ Route::prefix('stock')
         Route::get('/{stock}',       [StockControllers::class, 'show'])->name('show');
     });
 
-// Description / sous-catégorie : entièrement des opérations d'écriture,
-// réservées aux admins / super admins.
 Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
 
     Route::get('/stock/description/create/{stock_id}', [DescriptionController::class, 'create'])->name('description.create');
@@ -105,4 +91,24 @@ Route::middleware(['auth', 'role:admin,super_admin'])->group(function () {
     Route::get('/souscategorie/{sousCategory}/edit', [DescriptionController::class, 'editSousCategorie'])->name('souscategorie.edit');
     Route::put('/souscategorie/{sousCategory}', [DescriptionController::class, 'updateSousCategorie'])->name('souscategorie.update');
     Route::delete('/souscategorie/{sousCategory}', [DescriptionController::class, 'destroySousCategorie'])->name('souscategorie.destroy');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Achats & Approvisionnements
+|--------------------------------------------------------------------------
+*/
+Route::middleware('auth')->group(function () {
+    Route::resource('achat', AchatController::class);
+    Route::post('achat/{achat}/valider', [AchatController::class, 'valider'])->name('achat.valider');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Produits (stock / fini / compositions)
+|--------------------------------------------------------------------------
+| AJOUT : manquait entièrement.
+*/
+Route::middleware('auth')->group(function () {
+    Route::resource('produit', ProduitController::class);
 });

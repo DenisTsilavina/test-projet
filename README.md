@@ -133,19 +133,19 @@ Les captures suivantes présentent l'interface de gestion administrateur.
 
 Le tableau de bord permet de consulter les informations principales de l'activité commerciale.
 
-![Tableau de bord administrateur](images/admindashboard.png)
+![Tableau de bord administrateur](public/images/admindashboard.png)
 
 ### 2. Gestion des stocks
 
 Cette interface permet de gérer les stocks et les informations associées.
 
-![Gestion des stocks](images/stocks.png)
+![Gestion des stocks](public/images/stocks.png)
 
 ### 3. Vente directe en magasin
 
 Cette interface permet d'enregistrer les ventes réalisées directement au magasin.
 
-![Vente directe en magasin](images/vente-direct.png)
+![Vente directe en magasin](public/images/vente-direct.png)
 
 ---
 

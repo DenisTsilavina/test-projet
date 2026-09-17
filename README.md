@@ -1,66 +1,381 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+
+# 🛒 E-commerce - Gestion de Stock et de Vente
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="350" alt="Laravel Logo">
 </p>
 
-## About Laravel
+<p align="center">
+  <strong>Plateforme e-commerce et gestion commerciale</strong>
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+<p align="center">
+  Gestion des stocks, création de produits, vente directe en magasin et vente en ligne.
+</p>
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+---
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## 📌 À propos du projet
 
-## Learning Laravel
+Cette application e-commerce est une plateforme de gestion de stock et de vente développée avec **Laravel et Vue.js**.
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Elle permet de centraliser la gestion des stocks, des produits, des ventes et des commandes dans une seule application.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+Le projet propose deux interfaces principales :
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+- **Interface administrateur :** développée avec Laravel pour gérer les stocks, les produits, les ventes et les commandes.
+- **Interface client :** développée avec Vue.js pour permettre aux clients de consulter les produits et de passer des commandes en ligne.
 
-## Laravel Sponsors
+L'objectif est de faciliter la gestion commerciale en combinant les ventes physiques en magasin et les ventes en ligne.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+> 🚧 Projet en cours de développement
 
-### Premium Partners
+---
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+## 🎯 Objectifs du projet
 
-## Contributing
+- Centraliser la gestion des stocks et des ventes.
+- Faciliter la création et la gestion des produits.
+- Permettre la vente directe au magasin.
+- Permettre la vente indirecte via le site e-commerce.
+- Gérer les commandes des clients.
+- Améliorer le suivi des activités commerciales.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+---
 
-## Code of Conduct
+## 🛠️ Technologies utilisées
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+| Technologie | Utilisation |
+|---|---|
+| Laravel | Backend et interface administrateur |
+| Vue.js | Interface client et interactions frontend |
+| PHP | Logique serveur |
+| MySQL | Gestion de la base de données |
+| HTML / CSS | Structure et mise en forme |
+| JavaScript | Interactivité |
+| Git / GitHub | Versionnement du projet |
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## ⚙️ Fonctionnalités principales
 
-## License
+### 👨‍💼 1. Interface administrateur (Laravel)
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+L'interface administrateur permet de gérer l'ensemble des activités commerciales.
+
+- Gestion des stocks.
+- Insertion des stocks.
+- Création et gestion des produits.
+- Gestion des catégories et des unités.
+- Gestion des ventes directes en magasin.
+- Gestion des commandes en ligne.
+- Suivi des ventes et des activités.
+- Gestion des utilisateurs selon les fonctionnalités disponibles.
+
+### 📦 2. Gestion des stocks
+
+- Ajouter et gérer les stocks.
+- Suivre les quantités disponibles.
+- Gérer les unités de mesure.
+- Organiser les catégories.
+- Utiliser les stocks pour la création de produits.
+- Mettre à jour les quantités lors des ventes.
+
+### 🛍️ 3. Création et gestion des produits
+
+- Créer des produits.
+- Enregistrer les informations des produits.
+- Gérer les prix d'achat et de vente.
+- Associer les produits aux stocks.
+- Gérer les produits finis selon les besoins de l'application.
+
+### 🧾 4. Vente directe en magasin
+
+Cette fonctionnalité permet d'enregistrer les ventes réalisées directement dans le magasin.
+
+- Sélectionner les produits à vendre.
+- Choisir les quantités et les unités disponibles.
+- Calculer les montants.
+- Enregistrer les ventes.
+- Mettre à jour les stocks.
+- Gérer les modes de paiement disponibles.
+
+### 🌐 5. Vente en ligne (Vue.js)
+
+L'interface client permet aux utilisateurs de consulter les produits et de passer des commandes sur le site e-commerce.
+
+- Consulter les produits.
+- Consulter les informations et les prix.
+- Ajouter des produits au panier selon les fonctionnalités disponibles.
+- Passer une commande.
+- Enregistrer les informations nécessaires à la commande.
+- Consulter le suivi des commandes selon les fonctionnalités disponibles.
+
+### 📋 6. Gestion des commandes
+
+La gestion des commandes permet à l'administrateur de traiter les demandes effectuées par les clients.
+
+- Enregistrer les commandes.
+- Consulter les commandes clients.
+- Suivre les statuts des commandes.
+- Traiter les commandes.
+- Organiser le processus de vente en ligne.
+
+---
+
+## 🖥️ Captures d'écran
+
+### 👨‍💼 Interface administrateur - Laravel
+
+Les captures suivantes présentent l'interface de gestion administrateur.
+
+### 1. Tableau de bord administrateur
+
+Le tableau de bord permet de consulter les informations principales de l'activité commerciale.
+
+![Tableau de bord administrateur](images/admindashboard.png)
+
+### 2. Gestion des stocks
+
+Cette interface permet de gérer les stocks et les informations associées.
+
+![Gestion des stocks](images/stocks.png)
+
+### 3. Vente directe en magasin
+
+Cette interface permet d'enregistrer les ventes réalisées directement au magasin.
+
+![Vente directe en magasin](images/vente-direct.png)
+
+---
+
+## 🏗️ Architecture de l'application
+
+### Backend - Laravel
+
+Le backend Laravel assure :
+
+- La gestion des données.
+- La logique métier.
+- La gestion des stocks.
+- La gestion des produits.
+- La gestion des ventes.
+- La gestion des commandes.
+- La communication avec la base de données MySQL.
+
+### Frontend - Vue.js
+
+L'interface client Vue.js assure :
+
+- L'affichage des produits.
+- Les interactions avec les utilisateurs.
+- La consultation des informations.
+- Le parcours de commande en ligne.
+- La communication avec le backend selon l'architecture de l'application.
+
+---
+
+## 🚀 Installation du projet
+
+### 1. Cloner le dépôt
+
+```bash
+git clone https://github.com/DenisTsilavina/test-projet.git
+```
+
+### 2. Accéder au projet
+
+```bash
+cd test-projet
+```
+
+### 3. Installer les dépendances PHP
+
+```bash
+composer install
+```
+
+### 4. Installer les dépendances JavaScript
+
+```bash
+npm install
+```
+
+### 5. Configurer l'environnement
+
+Copier le fichier `.env.example` vers `.env`.
+
+Sous Windows PowerShell :
+
+```powershell
+Copy-Item .env.example .env
+```
+
+Sous Linux :
+
+```bash
+cp .env.example .env
+```
+
+### 6. Générer la clé de l'application
+
+```bash
+php artisan key:generate
+```
+
+### 7. Configurer la base de données
+
+Modifier le fichier `.env` et renseigner les informations de connexion à MySQL.
+
+Exemple :
+
+```dotenv
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=nom_de_la_base
+DB_USERNAME=root
+DB_PASSWORD=
+```
+
+Adaptez les valeurs à votre environnement local.
+
+### 8. Exécuter les migrations
+
+```bash
+php artisan migrate
+```
+
+Si des seeders sont disponibles et nécessaires :
+
+```bash
+php artisan db:seed
+```
+
+### 9. Compiler les ressources frontend
+
+Pour le développement :
+
+```bash
+npm run dev
+```
+
+Pour la production :
+
+```bash
+npm run build
+```
+
+### 10. Lancer l'application
+
+Dans un terminal :
+
+```bash
+php artisan serve
+```
+
+L'application sera accessible à l'adresse :
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## 🔐 Configuration
+
+Avant de lancer l'application, vérifier :
+
+- La configuration de la base de données.
+- Les dépendances PHP et JavaScript.
+- La configuration de l'environnement `.env`.
+- Les migrations nécessaires.
+- Les permissions et accès utilisateurs selon les fonctionnalités.
+
+---
+
+## 📁 Structure générale du projet
+
+```text
+test-projet/
+├── app/
+│   ├── Http/
+│   ├── Models/
+│   └── ...
+├── database/
+│   ├── migrations/
+│   └── seeders/
+├── public/
+├── resources/
+│   ├── js/
+│   ├── css/
+│   └── views/
+├── routes/
+├── images/
+│   ├── admindashboard.png
+│   ├── stocks.png
+│   └── vente-direct.png
+├── .env.example
+├── composer.json
+├── package.json
+└── README.md
+```
+
+---
+
+## 🔄 Processus de vente
+
+### Vente directe en magasin
+
+```text
+Insertion du stock
+       ↓
+Création du produit
+       ↓
+Sélection du produit
+       ↓
+Vente directe
+       ↓
+Enregistrement de la vente
+       ↓
+Mise à jour du stock
+```
+
+### Vente en ligne
+
+```text
+Consultation des produits
+       ↓
+Sélection des produits
+       ↓
+Création de la commande
+       ↓
+Traitement par l'administrateur
+       ↓
+Suivi de la commande
+```
+
+---
+
+## 📌 État du projet
+
+Le projet est en cours de développement.
+
+Les fonctionnalités et les interfaces sont progressivement améliorées afin de proposer une solution complète de gestion de stock et de vente en magasin et en ligne.
+
+---
+
+## 👨‍💻 Auteur
+
+**Jocyen Tsilavina Denis**
+
+- GitHub : [DenisTsilavina](https://github.com/DenisTsilavina)
+- LinkedIn : [Jocyen Tsilavina Denis](https://www.linkedin.com/in/jocyen-tsilavina-denis-536b74309/)
+
+---
+
+## 📄 Licence
+
+Ce projet est développé à des fins d'apprentissage et de développement personnel.
+
+La licence peut être définie selon les besoins du projet.

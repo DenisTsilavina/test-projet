@@ -77,9 +77,9 @@
                 @if(auth()->check() && auth()->user()->roleService()->role() === \App\Enums\UserRole::SUPER_ADMIN)
                     <div class="space-y-1">
                         <p class="px-3 mb-2 text-xs font-semibold tracking-wider uppercase text-slate-500">Super Admin</p>
-                        <a href="{{ route('admin.super.dashboard') }}"
+                        <a href="{{ route('admin.users.list') }}"
                            class="flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group {{ request()->routeIs('admin.super.*') ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
-                            <i class="text-lg ti ti-shield {{ request()->routeIs('admin.super.*') ? 'text-white' : 'text-slate-400 group-hover:text-slate-300' }}"></i>
+                            <i class="text-lg ti ti-shield {{ request()->routeIs('admin.users.*') ? 'text-white' : 'text-slate-400 group-hover:text-slate-300' }}"></i>
                             Gestion admins
                         </a>
                     </div>

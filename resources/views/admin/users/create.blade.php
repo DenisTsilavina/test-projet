@@ -1,4 +1,6 @@
-<x-guest-layout>
+@extends('layouts.app')
+
+@push('styles')
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Fraunces:wght@500;600&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -10,26 +12,23 @@
             --clay-dark: #7A3A24;
             --gold: #C89B3C;
             --highland: #4F6B4A;
-            --parchment: #EFE3CF;
             --paper: #FBF8F2;
             --danger: #b3402e;
 
             display: grid;
             grid-template-columns: minmax(280px, 38%) 1fr;
-            min-height: 550px;
+            min-height: 600px;
             max-width: 900px;
-            margin: 1rem auto;
+            margin: 2rem auto;
             background: var(--paper);
             border-radius: 18px;
             overflow: hidden;
             box-shadow: 0 24px 60px -20px rgba(36, 27, 20, 0.35);
             font-family: 'Work Sans', -apple-system, sans-serif;
             color: var(--ink);
-            text-align: left;
         }
 
         .vs-auth__panel {
-            position: relative;
             background:
                 repeating-linear-gradient(45deg, rgba(255,255,255,0.035) 0 2px, transparent 2px 14px),
                 repeating-linear-gradient(-45deg, rgba(0,0,0,0.05) 0 2px, transparent 2px 14px),
@@ -120,7 +119,7 @@
         }
 
         .vs-field {
-            margin-bottom: 1.25rem;
+            margin-bottom: 1.15rem;
         }
 
         .vs-field label {
@@ -128,16 +127,15 @@
             font-size: 0.78rem;
             font-weight: 600;
             color: var(--ink);
-            margin-bottom: 0.4rem;
+            margin-bottom: 0.35rem;
         }
 
-        .vs-field input[type="email"],
-        .vs-field input[type="password"] {
+        .vs-field input {
             width: 100%;
             border: 1.5px solid #ddd0ba;
             background: var(--paper);
             border-radius: 8px;
-            padding: 0.6rem 0.8rem;
+            padding: 0.55rem 0.8rem;
             font-size: 0.9rem;
             color: var(--ink);
             box-sizing: border-box;
@@ -149,11 +147,16 @@
             box-shadow: 0 0 0 3px rgba(156, 74, 46, 0.15);
         }
 
-        .vs-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-bottom: 1.5rem;
+        .vs-field input.is-invalid {
+            border-color: var(--danger);
+        }
+
+        .vs-error {
+            display: block;
+            color: var(--danger);
+            font-size: 0.78rem;
+            margin-top: 0.3rem;
+            font-weight: 500;
         }
 
         .vs-btn {
@@ -167,6 +170,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: background 0.15s ease;
+            margin-top: 0.5rem;
         }
 
         .vs-btn:hover {
@@ -188,11 +192,13 @@
             }
         }
     </style>
+@endpush
 
+@section('content')
     <div class="vs-auth">
         <div class="vs-auth__panel">
             <div>
-                <div class="vs-auth__eyebrow">Gestion des stocks</div>
+                <div class="vs-auth__eyebrow">Espace Client</div>
                 <div class="vs-auth__wordmark">Tsenan'i<br>Vohitsoa</div>
 
                 <div class="vs-marker">
@@ -202,56 +208,67 @@
             </div>
 
             <div class="vs-auth__address">
-                Vohitsoakofafabe, Antsoatany<br>
+                Vohitso akofafabe, Antsoatany<br>
                 Antsirabe II, RN 7<br>
                 Code postal 111
             </div>
         </div>
 
         <div class="vs-auth__form-side">
-            <!-- Session Status -->
-            <x-auth-session-status class="mb-4" :status="session('status')" />
+            <h1 class="vs-auth__heading">Inscription Client</h1>
+            <p class="vs-auth__subheading">Créez votre compte pour passer vos commandes en ligne.</p>
 
-            <h1 class="vs-auth__heading">Connexion</h1>
-            <p class="vs-auth__subheading">Accédez à l'espace de gestion de Tsenan'i Vohitsoa.</p>
-
-            <form method="POST" action="{{ route('login') }}">
+            <form method="POST" action="{{ route('register') }}">
                 @csrf
 
-                <!-- Email Address -->
+                {{-- Le rôle est forcé à CLIENT (0) de manière transparente --}}
+                <input type="hidden" name="role" value="{{ \App\Enums\UserRole::CLIENT->value ?? 0 }}">
+
+                <div class="vs-field">
+                    <label for="name">Nom complet</label>
+                    <input id="name" type="text" class="@error('name') is-invalid @enderror" name="name" value="{{ old('name') }}" required autocomplete="name" autofocus>
+                    @error('name')
+                    <span class="vs-error" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
+                </div>
+
                 <div class="vs-field">
                     <label for="email">Adresse E-mail</label>
-                    <input id="email" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-                    <x-input-error :messages="$errors->get('email')" class="mt-2" />
+                    <input id="email" type="email" class="@error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="email">
+                    @error('email')
+                    <span class="vs-error" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
                 </div>
 
-                <!-- Password -->
                 <div class="vs-field">
                     <label for="password">Mot de passe</label>
-                    <input id="password" type="password" name="password" required autocomplete="current-password" />
-                    <x-input-error :messages="$errors->get('password')" class="mt-2" />
+                    <input id="password" type="password" class="@error('password') is-invalid @enderror" name="password" required autocomplete="new-password">
+                    @error('password')
+                    <span class="vs-error" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
+                    @enderror
                 </div>
 
-                <!-- Remember Me -->
-                <div class="vs-row">
-                    <label for="remember_me" class="inline-flex items-center">
-                        <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                        <span class="ms-2 text-sm text-gray-600">Se souvenir de moi</span>
-                    </label>
+                <div class="vs-field">
+                    <label for="password-confirm">Confirmer le mot de passe</label>
+                    <input id="password-confirm" type="password" name="password_confirmation" required autocomplete="new-password">
                 </div>
 
                 <div>
                     <button type="submit" class="vs-btn">
-                        Se connecter
+                        Créer mon compte
                     </button>
 
-                    @if (Route::has('password.request'))
-                        <a class="vs-link" href="{{ route('password.request') }}">
-                            Mot de passe oublié ?
-                        </a>
-                    @endif
+                    <a class="vs-link" href="{{ route('login') }}">
+                        Déjà un compte ? Connectez-vous
+                    </a>
                 </div>
             </form>
         </div>
     </div>
-</x-guest-layout>
+@endsection

@@ -6,8 +6,7 @@ enum UserRole: int
 {
     case CLIENT = 0;
     case SUPER_ADMIN = 1;
-    case VENDEUR = 2;
-    case ADMINS = 3;
+    case ADMINS = 2;
     /**
      * Obtenir le label lisible pour l'humain.
      */
@@ -16,8 +15,7 @@ enum UserRole: int
         return match($this) {
             self::CLIENT => 'Client',
             self::SUPER_ADMIN => 'Super Administrateur',
-            self::VENDEUR => 'Vendeur',
-            self::ADMINS => 'Administrateur',
+            self::ADMINS => 'Administrateur , Vendeur , Production',
         };
     }
 }

@@ -17,7 +17,9 @@
                 </div>
             @endif
 
-            <h4 class="mb-3">Produits disponibles</h4>
+            <h1 class="mb-4 text-center fw-bold text-primary fs-2">
+                Produits disponibles
+            </h1>
 
             <div class="row">
                 @forelse ($produits as $produit)

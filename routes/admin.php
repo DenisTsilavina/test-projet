@@ -16,7 +16,7 @@ use App\Http\Controllers\DescriptionController;
 */
 
 Route::prefix('admin/users')
-    ->middleware(['auth', 'role:super_admin'])
+    ->middleware(['auth', 'role:1,2'])
     ->name('admin.users.')
     ->group(function () {
         Route::get('/',            [UserController::class, 'list'])->name('list');
@@ -35,10 +35,15 @@ Route::prefix('admin')
 
         Route::get('/dashboard', [UserController::class, 'adminDashboard'])->name('dashboard');
 
-        Route::get('/vente',            [VenteController::class, 'index'])->name('vente.index');
-        Route::get('/vente/create',     [VenteController::class, 'create'])->name('vente.create');
-        Route::post('/vente',           [VenteController::class, 'store'])->name('vente.store');
+        Route::get('/vente', [VenteController::class, 'index'])->name('vente.index');
+        Route::get('/vente/create', [VenteController::class, 'create'])->name('vente.create');
+        Route::post('/vente', [VenteController::class, 'store'])->name('vente.store');
         Route::delete('/vente/{vente}', [VenteController::class, 'destroy'])->name('vente.destroy');
+
+        // AJOUT : manquait entièrement. VenteController::dashboard() et sa
+        // vue admin.vente.dashboard existent depuis la refonte du module
+        // Vente, mais n'avaient jamais de route associée.
+        Route::get('/vente/dashboard', [VenteController::class, 'dashboard'])->name('vente.dashboard');
 
         Route::get('/commandes', [CommandeAdminController::class, 'index'])->name('commandes.index');
         Route::get('/commandes/{commande}', [CommandeAdminController::class, 'show'])->name('commandes.show');
@@ -68,11 +73,11 @@ Route::prefix('stock')
         Route::get('/inventaire',    [StockControllers::class, 'inventaire'])->name('inventaire');
 
         Route::middleware('role:admin,super_admin')->group(function () {
-            Route::get('/create',        [StockControllers::class, 'create'])->name('create');
-            Route::post('/',             [StockControllers::class, 'store'])->name('store');
+            Route::get('/create', [StockControllers::class, 'create'])->name('create');
+            Route::post('/', [StockControllers::class, 'store'])->name('store');
             Route::get('/{stock}/edit',  [StockControllers::class, 'edit'])->name('edit');
-            Route::put('/{stock}',       [StockControllers::class, 'update'])->name('update');
-            Route::delete('/{stock}',    [StockControllers::class, 'destroy'])->name('destroy');
+            Route::put('/{stock}', [StockControllers::class, 'update'])->name('update');
+            Route::delete('/{stock}', [StockControllers::class, 'destroy'])->name('destroy');
         });
 
         Route::get('/{stock}',       [StockControllers::class, 'show'])->name('show');
@@ -107,7 +112,6 @@ Route::middleware('auth')->group(function () {
 |--------------------------------------------------------------------------
 | Produits (stock / fini / compositions)
 |--------------------------------------------------------------------------
-| AJOUT : manquait entièrement.
 */
 Route::middleware('auth')->group(function () {
     Route::resource('produit', ProduitController::class);

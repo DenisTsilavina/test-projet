@@ -12,36 +12,35 @@ class UserSeeder extends Seeder
     {
         $users = [
             [
-                'email'    => 'superadmin@app.com',
-                'name'     => 'Super Admin',
-                'password' => 'Admin123', // Sera haché automatiquement par le modèle
-                'role'     => UserRole::SUPER_ADMIN,
+                'email' => 'superadmin@app.com',
+                'name' => 'Super Admin',
+                'password' => 'Admin123',
+                'role' => UserRole::SUPER_ADMIN,
             ],
+
+            /**
+             *  CHANGEMENT : UserRole::VENDEUR -> UserRole::ADMINS
+             * (rôle fusionné : administrateur/vendeur/production).
+             */
             [
-                'email'    => 'vendeur@app.com',
-                'name'     => 'Vendeur Test',
+                'email' => 'vendeur@app.com',
+                'name' => 'Vendeur Test',
                 'password' => 'Vendeur123',
-                'role'     => UserRole::VENDEUR,
+                'role' => UserRole::ADMINS,
             ],
             [
-                'email'    => 'client@app.com',
-                'name'     => 'Client Test',
+                'email' => 'client@app.com',
+                'name' => 'Client Test',
                 'password' => 'Client123',
-                'role'     => UserRole::CLIENT,
+                'role' => UserRole::CLIENT,
             ],
         ];
 
         foreach ($users as $userData) {
-            // On cherche par l'email ou on instancie un nouvel utilisateur
             $user = User::firstOrNew(['email' => $userData['email']]);
 
-            // Assignation des valeurs
             $user->name = $userData['name'];
-
-            // Pas besoin de Hash::make() ici grâce au cast 'hashed' dans le modèle User
             $user->password = $userData['password'];
-
-            // Laravel applique le cast Enum automatiquement ici
             $user->role = $userData['role'];
 
             $user->save();

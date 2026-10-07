@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('effectif')->default(0);
             $table->foreignId('unite_id')->nullable()->constrained('unites')->nullOnDelete();
             $table->string('region')->nullable();
+            $table->string('image')->nullable();
             $table->timestamps();
         });
     }

@@ -5,13 +5,18 @@ namespace App\Http\Controllers;
 use App\Enums\UserRole;
 use App\Models\User;
 use App\Models\Vente;
+use App\Models\Produit;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
+    /**
+     * Redirection principale selon le rôle
+     */
     public function index()
     {
         $user = Auth::user();
@@ -22,13 +27,62 @@ class UserController extends Controller
     }
 
     /**
-     * Liste de tous les users (Super Admin)
+     * Vue hôte Blade pour charger l'application SPA Vue.js client
      */
+    public function clientDashboard()
+    {
+        if (Auth::user()?->role !== UserRole::CLIENT) {
+            return redirect()->route('admin.dashboard');
+        }
+
+        return view('layouts.client');
+    }
+
+    /**
+     * Endpoint API (session web) appelé par Axios dans Vue.js
+     */
+    public function clientData(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $produits = Produit::where('statut', 'actif')
+            ->with('description') // charger la relation description si nécessaire
+            ->latest()
+            ->get()
+            ->map(function ($produit) {
+                return [
+                    'id' => $produit->id,
+                    'nom' => $produit->nom,
+                    'prix_vente'  => $produit->prix_vente,
+                    'stock' => $produit->stock,
+                    'description' => $produit->description?->description ?? 'Aucune description',
+                    // Utilise l'image de la description ou du produit
+                    'image_url' => $produit->description?->image_url ?? asset('images/default-product.png'),
+                ];
+            });
+
+        return response()->json([
+            'user' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'role' => $user->role->value,
+                'label' => $user->role->label(),
+            ],
+            'produits' => $produits,
+        ]);
+    }
+
+    public function homeData(Request $request): JsonResponse
+    {
+        return response()->json([
+            'user' => $request->user(),
+            'produits' => Produit::where('statut', 'actif')->latest()->take(8)->get(),
+        ]);
+    }
+
     public function list()
     {
-        // CHANGEMENT : renvoyait 'admin.vente.dashboard' par erreur (copier-coller),
-        // qui attend totalRevenue/totalVente/venteRecentes — aucun n'était fourni.
-        // Corrigé vers une vraie vue de liste d'utilisateurs.
         $users = User::latest()->paginate(10);
         return view('admin.users.list', compact('users'));
     }
@@ -38,11 +92,6 @@ class UserController extends Controller
         return view('admin.users.create');
     }
 
-    /**
-     * Formulaire de création d'un membre du personnel (admin/vendeur).
-     * Séparé de create() : ici le rôle n'est PAS figé, mais limité à
-     * SUPER_ADMIN/ADMINS — jamais CLIENT.
-     */
     public function createStaff()
     {
         $rolesStaff = array_filter(
@@ -56,17 +105,17 @@ class UserController extends Controller
     public function storeStaff(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email',
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'role'     => 'required|integer|in:' . UserRole::SUPER_ADMIN->value . ',' . UserRole::ADMINS->value,
+            'role' => 'required|integer|in:' . UserRole::SUPER_ADMIN->value . ',' . UserRole::ADMINS->value,
         ]);
 
         User::create([
-            'name'     => $validated['name'],
-            'email'    => $validated['email'],
+            'name' => $validated['name'],
+            'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
-            'role'     => $validated['role'],
+            'role' => $validated['role'],
         ]);
 
         return redirect()->route('admin.users.list')
@@ -83,10 +132,10 @@ class UserController extends Controller
         ]);
 
         User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
+            'name' => $request->name,
+            'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => $request->role,
+            'role' => $request->role,
         ]);
 
         return redirect()->route('admin.users.list')
@@ -106,10 +155,10 @@ class UserController extends Controller
     public function update(Request $request, User $user): RedirectResponse
     {
         $request->validate([
-            'name'     => 'required|string|max:255',
-            'email'    => 'required|email|unique:users,email,' . $user->id,
+            'name' => 'required|string|max:255',
+            'email' => 'required|email|unique:users,email,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
-            'role'     => 'required|integer',
+            'role' => 'required|integer',
         ]);
 
         $user->update([
@@ -137,27 +186,8 @@ class UserController extends Controller
             ->with('success', 'Utilisateur supprimé.');
     }
 
-    public function clientDashboard()
-    {
-        // CHANGEMENT : redirigeait vers 'client.dashboard' (lui-même !),
-        // ce qui provoquait une boucle / un contenu incohérent avec l'URL
-        // pour tout utilisateur non-CLIENT (comme un Super Admin) qui
-        // visite cette URL. Corrigé vers 'admin.dashboard'.
-        if (Auth::user()?->role !== UserRole::CLIENT) {
-            return redirect()->route('admin.dashboard');
-        }
-
-        return view('layouts.client');
-    }
-
-    /**
-     * Dashboard admin (Blade)
-     */
     public function adminDashboard()
     {
-        // CHANGEMENT : totalVentes décommenté et réellement calculé,
-        // et ajouté au compact() — la vue en a besoin depuis la correction
-        // du commentaire Blade cassé qui le masquait.
         $totalUsers  = User::count();
         $totalVentes = Vente::count();
 
@@ -171,16 +201,6 @@ class UserController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        // CHANGEMENT : redirigeait vers /login. Maintenant vers la page
-        // d'accueil publique (vue 'welcome', route '/').
         return redirect('/');
-    }
-
-    public function homeData(Request $request)
-    {
-        return response()->json([
-            'user' => $request->user(),
-            'produits' => \App\Models\Stock::latest()->take(8)->get(),
-        ]);
     }
 }

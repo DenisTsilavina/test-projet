@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Storage;
 
 class Description extends Model
 {
@@ -16,6 +17,7 @@ class Description extends Model
         'effectif',
         'unite_id',
         'region',
+        'image',
     ];
 
     /**
@@ -51,5 +53,20 @@ class Description extends Model
     public function vente()
     {
         return $this->hasMany(Vente::class, 'description_id');
+    }
+    /**
+     * insertion des immage de produit /stocks
+     */
+
+    protected $appends = ['image_url'];
+
+    public function getImageUrlAttribute(): string
+    {
+        if ($this->image && Storage::disk('public')->exists($this->image)) {
+            return asset('storage/' . $this->image);
+        }
+
+        // Image par défaut si aucun fichier n'est téléversé
+        return asset('images/default-product.png');
     }
 }

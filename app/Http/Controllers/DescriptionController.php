@@ -6,13 +6,10 @@ use App\Models\Description;
 use App\Models\Stock;
 use App\Models\SousCategory;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class DescriptionController extends Controller
 {
-    // CHANGEMENT : cette méthode n'est référencée par aucune route
-    // (routes/admin.php pointe vers StockControllers::index()). Corrigée
-    // quand même pour ne pas laisser de code mort trompeur avec une
-    // relation inexistante ('unites' pluriel -> 'unite' singulier).
     public function index()
     {
         $stocks = Stock::with(['descriptions.sousCategorie', 'unite'])->get();
@@ -33,14 +30,19 @@ class DescriptionController extends Controller
 
     public function store(Request $request)
     {
-        // CHANGEMENT : ajout de 'effectif', envoyé par le formulaire modal
-        // mais absent jusque-là — il était silencieusement ignoré.
         $validated = $request->validate([
-            'stock_id' => 'required|exists:stocks,id',
+            'stock_id'    => 'required|exists:stocks,id',
             'description' => 'required|string|max:255',
-            'effectif' => 'nullable|integer|min:0',
-            'region' => 'required|string|max:100',
+            'effectif'    => 'nullable|integer|min:0',
+            'region'      => 'required|string|max:100',
+            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        // Gestion du téléversement de l'image
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('descriptions', 'public');
+            $validated['image'] = $path;
+        }
 
         Description::create($validated);
 
@@ -58,13 +60,22 @@ class DescriptionController extends Controller
 
     public function update(Request $request, Description $description)
     {
-        // CHANGEMENT : idem, ajout de 'effectif' pour rester cohérent
-        // avec store() et le formulaire d'édition.
         $validated = $request->validate([
             'description' => 'required|string|max:255',
-            'effectif' => 'nullable|integer|min:0',
-            'region' => 'required|string|max:100',
+            'effectif'    => 'nullable|integer|min:0',
+            'region'      => 'required|string|max:100',
+            'image'       => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
+
+        // Remplacement de l'image si un nouveau fichier est envoyé
+        if ($request->hasFile('image')) {
+            if ($description->image && Storage::disk('public')->exists($description->image)) {
+                Storage::disk('public')->delete($description->image);
+            }
+
+            $path = $request->file('image')->store('descriptions', 'public');
+            $validated['image'] = $path;
+        }
 
         $description->update($validated);
 
@@ -75,6 +86,11 @@ class DescriptionController extends Controller
 
     public function destroy(Description $description)
     {
+        // Suppression du fichier image sur le disque s'il existe
+        if ($description->image && Storage::disk('public')->exists($description->image)) {
+            Storage::disk('public')->delete($description->image);
+        }
+
         $description->delete();
 
         return redirect()
@@ -97,8 +113,8 @@ class DescriptionController extends Controller
     {
         $validated = $request->validate([
             'description_id' => 'required|exists:descriptions,id',
-            'prix_achat' => 'nullable|numeric|min:0',
-            'prix_vente' => 'nullable|numeric|min:0',
+            'prix_achat'     => 'nullable|numeric|min:0',
+            'prix_vente'     => 'nullable|numeric|min:0',
         ]);
 
         SousCategory::create($validated);

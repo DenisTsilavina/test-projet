@@ -7,7 +7,7 @@
         @if ($errors->any())
             <div class="alert alert-danger">
                 <ul class="mb-0">
-                    @foreach ($errors->all() as $error)
+                    @foreach ($errors->all() as$error)
                         <li>{{ $error }}</li>
                     @endforeach
                 </ul>
@@ -37,8 +37,8 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Statut</label>
                             <select name="statut" class="form-select">
-                                <option value="actif">Actif</option>
-                                <option value="inactif">Inactif</option>
+                                <option value="actif" {{ old('statut') == 'actif' ? 'selected' : '' }}>Actif</option>
+                                <option value="inactif" {{ old('statut') == 'inactif' ? 'selected' : '' }}>Inactif</option>
                             </select>
                         </div>
                     </div>
@@ -46,10 +46,10 @@
                     <div class="mb-0">
                         <label class="form-label d-block">Type de produit</label>
                         <div class="btn-group" role="group">
-                            <input type="radio" class="btn-check" name="type" id="type-stock" value="stock" checked onchange="basculerType()">
+                            <input type="radio" class="btn-check" name="type" id="type-stock" value="stock" {{ old('type', 'stock') == 'stock' ? 'checked' : '' }} onchange="basculerType()">
                             <label class="btn btn-outline-primary" for="type-stock">Produit de stock (vendu tel quel)</label>
 
-                            <input type="radio" class="btn-check" name="type" id="type-fini" value="fini" onchange="basculerType()">
+                            <input type="radio" class="btn-check" name="type" id="type-fini" value="fini" {{ old('type') == 'fini' ? 'checked' : '' }} onchange="basculerType()">
                             <label class="btn btn-outline-primary" for="type-fini">Produit fini (fabriqué)</label>
                         </div>
                     </div>
@@ -64,8 +64,10 @@
                         <label class="form-label">Stock source</label>
                         <select name="stock_id" class="form-select">
                             <option value="">-- Choisir --</option>
-                            @foreach ($stocks as $stock)
-                                <option value="{{ $stock->id }}">{{ $stock->name_stock }} (dispo: {{ $stock->quantite }})</option>
+                            @foreach ($stocks as$stock)
+                                <option value="{{ $stock->id }}" {{ old('stock_id') == $stock->id ? 'selected' : '' }}>
+                                    {{ $stock->name_stock }} (dispo: {{$stock->quantite }})
+                                </option>
                             @endforeach
                         </select>
                     </div>
@@ -107,12 +109,13 @@
         </form>
     </div>
 
+    {{-- Template de base pour JavaScript --}}
     <template id="composition-template">
         <tr>
             <td>
                 <select name="compositions[__INDEX__][stock_id]" class="form-select">
                     <option value="">-- Choisir --</option>
-                    @foreach ($stocks as $stock)
+                    @foreach ($stocks as$stock)
                         <option value="{{ $stock->id }}">{{ $stock->name_stock }}</option>
                     @endforeach
                 </select>
@@ -132,10 +135,24 @@
     <script>
         let compositionIndex = 0;
 
-        function ajouterComposition() {
+        function ajouterComposition(stockId = '', quantite = '', unite = '') {
             const template = document.getElementById('composition-template').innerHTML;
             const html = template.replaceAll('__INDEX__', compositionIndex);
-            document.getElementById('compositions-body').insertAdjacentHTML('beforeend', html);
+
+            // Création d'un élément temporaire pour manipuler le HTML avant insertion
+            const tempDiv = document.createElement('tbody');
+            tempDiv.innerHTML = html;
+
+            if (stockId) {
+                const select = tempDiv.querySelector('select');
+                if(select.querySelector(`option[value="${stockId}"]`)) {
+                    select.value = stockId;
+                }
+            }
+            if (quantite) tempDiv.querySelector('input[name$="[quantite_necessaire]"]').value = quantite;
+            if (unite) tempDiv.querySelector('input[name$="[unite]"]').value = unite;
+
+            document.getElementById('compositions-body').appendChild(tempDiv.firstElementChild);
             compositionIndex++;
         }
 
@@ -147,9 +164,27 @@
             // Rend les champs requis seulement pour la section active
             document.querySelector('select[name="stock_id"]').required = estStock;
 
+            // Ajoute une ligne vide uniquement si c'est un produit fini ET qu'il n'y a pas de lignes existantes
             if (!estStock && document.getElementById('compositions-body').children.length === 0) {
                 ajouterComposition();
             }
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialisation de la vue au chargement de la page (important pour conserver l'état après une erreur)
+            basculerType();
+
+            // Récupérer les anciennes valeurs des compositions en cas d'erreur de validation
+            const oldCompositions = @json(old('compositions', []));
+
+            if (oldCompositions && Array.isArray(oldCompositions) && oldCompositions.length > 0) {
+                document.getElementById('compositions-body').innerHTML = ''; // Nettoyer avant d'ajouter
+                oldCompositions.forEach(comp => {
+                    if (comp) { // Sécurité au cas où l'index serait corrompu
+                        ajouterComposition(comp.stock_id, comp.quantite_necessaire, comp.unite);
+                    }
+                });
+            }
+        });
     </script>
 @endsection

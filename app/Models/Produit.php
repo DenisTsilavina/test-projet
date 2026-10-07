@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Produit extends Model
 {
@@ -40,5 +41,11 @@ class Produit extends Model
     public function estFini(): bool
     {
         return $this->type === 'fini';
+    }
+    public function stocks(): BelongsToMany
+    {
+        return $this->belongsToMany(Stock::class, 'produits_stock')
+            ->withPivot('seuil_alerte')
+            ->withTimestamps();
     }
 }

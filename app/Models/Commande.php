@@ -92,7 +92,9 @@ class Commande extends Model
             $quantiteDemandee = (int) $ligne['quantite'];
 
             if ($produit->estStock()) {
-                $dispo = $produit->produitStock->stock->quantite ?? 0;
+                // CHANGEMENT : quantite_totale (magasin + réserve), pas
+                // seulement la réserve.
+                $dispo = $produit->produitStock->quantite_disponible ?? 0;
 
                 if ($quantiteDemandee > $dispo) {
                     $errors["lignes.$i.quantite"] =

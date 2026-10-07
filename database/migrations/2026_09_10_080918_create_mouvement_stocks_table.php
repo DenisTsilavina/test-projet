@@ -6,33 +6,28 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('mouvements_stocks', function (Blueprint $table) {
             $table->id();
             $table->foreignId('stock_id')->constrained('stocks')->cascadeOnDelete();
             $table->enum('type_mouvement', ['entree', 'sortie']);
-            // D'où vient le mouvement : achat, vente, ou ajustement manuel.
-            $table->enum('reference_type', ['achat', 'vente', 'ajustement']);
+            // CHANGEMENT : 'transfert' ajouté (transfert réserve <-> magasin).
+            $table->enum('reference_type', ['achat', 'vente', 'ajustement', 'transfert']);
             $table->unsignedBigInteger('reference_id')->nullable();
+            // AJOUT : quel emplacement ce mouvement affecte.
+            $table->enum('emplacement', ['magasin', 'reserve'])->default('reserve');
             $table->decimal('quantite', 12, 2);
             $table->integer('prix_unitaire')->nullable();
             $table->dateTime('date_mouvement')->useCurrent();
-            // CHANGEMENT : utilisateur_id -> users.id (qui a fait le mouvement)
             $table->foreignId('utilisateur_id')->constrained('users');
             $table->text('remarque')->nullable();
             $table->timestamps();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('mouvement_stocks');
+        Schema::dropIfExists('mouvements_stocks');
     }
 };

@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Produitstock extends Model
+class ProduitStock extends Model
 {
+    use HasFactory;
 
     protected $table = 'produits_stock';
 
@@ -27,12 +28,11 @@ class Produitstock extends Model
     }
 
     /**
-     * La quantité vendable vient directement du stock lié,
-     * pas d'un champ dupliqué ici.
+     * CHANGEMENT : magasin + réserve, pas seulement stock->quantite.
      */
     public function getQuantiteDisponibleAttribute(): float
     {
-        return $this->stock->quantite ?? 0;
+        return $this->stock->quantite_totale ?? 0;
     }
 
     public function enAlerte(): bool

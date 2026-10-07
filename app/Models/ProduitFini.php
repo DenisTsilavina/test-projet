@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class ProduitFini extends Model
 {
     use HasFactory;
+
     protected $table = 'produits_finis';
 
     protected $fillable = [
@@ -26,10 +27,13 @@ class ProduitFini extends Model
         return $this->hasMany(Composition::class);
     }
 
+    /**
+     * CHANGEMENT : compare à quantite_totale (magasin + réserve).
+     */
     public function stockSuffisantPour(int $quantite): bool
     {
         foreach ($this->compositions as $ligne) {
-            $dispo = $ligne->stock->quantite ?? 0;
+            $dispo = $ligne->stock->quantite_totale ?? 0;
 
             if ($dispo < $ligne->quantite_necessaire * $quantite) {
                 return false;

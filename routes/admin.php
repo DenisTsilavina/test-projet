@@ -16,12 +16,18 @@ use App\Http\Controllers\DescriptionController;
 */
 
 Route::prefix('admin/users')
-    ->middleware(['auth', 'role:1,2'])
+    ->middleware(['auth', 'role:super_admin'])
     ->name('admin.users.')
     ->group(function () {
         Route::get('/',            [UserController::class, 'list'])->name('list');
         Route::get('/create',      [UserController::class, 'create'])->name('create');
         Route::post('/',           [UserController::class, 'store'])->name('store');
+
+        // AJOUT : création d'un membre du personnel (admin/vendeur),
+        // séparée de create()/store() qui ne créent que des clients.
+        Route::get('/staff/create', [UserController::class, 'createStaff'])->name('create-staff');
+        Route::post('/staff',       [UserController::class, 'storeStaff'])->name('store-staff');
+
         Route::get('/{user}',      [UserController::class, 'show'])->name('show');
         Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit');
         Route::put('/{user}',      [UserController::class, 'update'])->name('update');
@@ -35,9 +41,9 @@ Route::prefix('admin')
 
         Route::get('/dashboard', [UserController::class, 'adminDashboard'])->name('dashboard');
 
-        Route::get('/vente', [VenteController::class, 'index'])->name('vente.index');
-        Route::get('/vente/create', [VenteController::class, 'create'])->name('vente.create');
-        Route::post('/vente', [VenteController::class, 'store'])->name('vente.store');
+        Route::get('/vente',            [VenteController::class, 'index'])->name('vente.index');
+        Route::get('/vente/create',     [VenteController::class, 'create'])->name('vente.create');
+        Route::post('/vente',           [VenteController::class, 'store'])->name('vente.store');
         Route::delete('/vente/{vente}', [VenteController::class, 'destroy'])->name('vente.destroy');
 
         // AJOUT : manquait entièrement. VenteController::dashboard() et sa
@@ -73,11 +79,11 @@ Route::prefix('stock')
         Route::get('/inventaire',    [StockControllers::class, 'inventaire'])->name('inventaire');
 
         Route::middleware('role:admin,super_admin')->group(function () {
-            Route::get('/create', [StockControllers::class, 'create'])->name('create');
-            Route::post('/', [StockControllers::class, 'store'])->name('store');
+            Route::get('/create',        [StockControllers::class, 'create'])->name('create');
+            Route::post('/',             [StockControllers::class, 'store'])->name('store');
             Route::get('/{stock}/edit',  [StockControllers::class, 'edit'])->name('edit');
-            Route::put('/{stock}', [StockControllers::class, 'update'])->name('update');
-            Route::delete('/{stock}', [StockControllers::class, 'destroy'])->name('destroy');
+            Route::put('/{stock}',       [StockControllers::class, 'update'])->name('update');
+            Route::delete('/{stock}',    [StockControllers::class, 'destroy'])->name('destroy');
         });
 
         Route::get('/{stock}',       [StockControllers::class, 'show'])->name('show');

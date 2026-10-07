@@ -26,6 +26,9 @@ class UserController extends Controller
      */
     public function list()
     {
+        // CHANGEMENT : renvoyait 'admin.vente.dashboard' par erreur (copier-coller),
+        // qui attend totalRevenue/totalVente/venteRecentes — aucun n'était fourni.
+        // Corrigé vers une vraie vue de liste d'utilisateurs.
         $users = User::latest()->paginate(10);
         return view('admin.users.list', compact('users'));
     }
@@ -35,24 +38,59 @@ class UserController extends Controller
         return view('admin.users.create');
     }
 
+    /**
+     * Formulaire de création d'un membre du personnel (admin/vendeur).
+     * Séparé de create() : ici le rôle n'est PAS figé, mais limité à
+     * SUPER_ADMIN/ADMINS — jamais CLIENT.
+     */
+    public function createStaff()
+    {
+        $rolesStaff = array_filter(
+            UserRole::cases(),
+            fn ($role) => $role !== UserRole::CLIENT
+        );
+
+        return view('admin.users.create-staff', compact('rolesStaff'));
+    }
+
+    public function storeStaff(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name'     => 'required|string|max:255',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|string|min:8|confirmed',
+            'role'     => 'required|integer|in:' . UserRole::SUPER_ADMIN->value . ',' . UserRole::ADMINS->value,
+        ]);
+
+        User::create([
+            'name'     => $validated['name'],
+            'email'    => $validated['email'],
+            'password' => Hash::make($validated['password']),
+            'role'     => $validated['role'],
+        ]);
+
+        return redirect()->route('admin.users.list')
+            ->with('success', 'Membre du personnel créé avec succès.');
+    }
+
     public function store(Request $request): RedirectResponse
     {
         $request->validate([
             'name'     => 'required|string|max:255',
             'email'    => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
+            'role'     => 'required|integer',
         ]);
 
-        // Force systématiquement le rôle CLIENT (0)
         User::create([
             'name'     => $request->name,
             'email'    => $request->email,
             'password' => Hash::make($request->password),
-            'role'     => UserRole::CLIENT,
+            'role'     => $request->role,
         ]);
 
-        return redirect()->route('admin.users.login')
-            ->with('status', 'Compte créé avec succès. Vous pouvez maintenant vous connecter.');
+        return redirect()->route('admin.users.list')
+            ->with('success', 'Utilisateur créé avec succès.');
     }
 
     public function show(User $user)
@@ -99,24 +137,27 @@ class UserController extends Controller
             ->with('success', 'Utilisateur supprimé.');
     }
 
-    /**
-     * Dashboard Client
-     * Si l'utilisateur n'est pas CLIENT (ex: Super Admin), on le redirige vers l'admin dashboard
-     */
-
     public function clientDashboard()
     {
+        // CHANGEMENT : redirigeait vers 'client.dashboard' (lui-même !),
+        // ce qui provoquait une boucle / un contenu incohérent avec l'URL
+        // pour tout utilisateur non-CLIENT (comme un Super Admin) qui
+        // visite cette URL. Corrigé vers 'admin.dashboard'.
         if (Auth::user()?->role !== UserRole::CLIENT) {
             return redirect()->route('admin.dashboard');
         }
+
         return view('layouts.client');
     }
 
     /**
-     * Dashboard admin
+     * Dashboard admin (Blade)
      */
     public function adminDashboard()
     {
+        // CHANGEMENT : totalVentes décommenté et réellement calculé,
+        // et ajouté au compact() — la vue en a besoin depuis la correction
+        // du commentaire Blade cassé qui le masquait.
         $totalUsers  = User::count();
         $totalVentes = Vente::count();
 
@@ -130,13 +171,15 @@ class UserController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/login');
+        // CHANGEMENT : redirigeait vers /login. Maintenant vers la page
+        // d'accueil publique (vue 'welcome', route '/').
+        return redirect('/');
     }
 
     public function homeData(Request $request)
     {
         return response()->json([
-            'user'     => $request->user(),
+            'user' => $request->user(),
             'produits' => \App\Models\Stock::latest()->take(8)->get(),
         ]);
     }

@@ -1,18 +1,25 @@
-{{-- resources/views/admin/users/create.blade.php --}}
+{{-- resources/views/admin/users/create-staff.blade.php --}}
 @extends('layouts.admin')
 
-@section('title', 'Nouvel utilisateur')
-@section('page-title', 'Créer un utilisateur')
+@section('title', 'Nouveau membre du personnel')
+@section('page-title', 'Créer un membre du personnel')
 
 @section('content')
     <div class="max-w-xl mx-auto">
 
         <div class="flex items-center justify-between mb-6 pb-4 border-b border-slate-100">
-            <h2 class="text-xl font-bold text-slate-900">Créer un utilisateur</h2>
+            <h2 class="text-xl font-bold text-slate-900">Créer un membre du personnel</h2>
             <a href="{{ route('admin.users.list') }}" class="text-sm text-slate-500 hover:text-indigo-600">
                 &larr; Retour à la liste
             </a>
         </div>
+
+        @if (session('success'))
+            <div class="flex items-center gap-3 p-4 mb-6 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm shadow-sm">
+                <i class="ti ti-circle-check text-emerald-500 text-lg shrink-0"></i>
+                {{ session('success') }}
+            </div>
+        @endif
 
         @if ($errors->any())
             <div class="flex items-start gap-3 p-4 mb-6 border rounded-xl bg-rose-50 border-rose-200 text-rose-800 shadow-sm">
@@ -28,7 +35,12 @@
             </div>
         @endif
 
-        <form action="{{ route('admin.users.store') }}" method="POST" class="space-y-5">
+        <div class="flex items-center gap-2 p-3 mb-6 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+            <i class="ti ti-shield-lock text-amber-500"></i>
+            Ce compte aura accès à l'administration de la boutique. Réservé au personnel de confiance.
+        </div>
+
+        <form action="{{ route('admin.users.store-staff') }}" method="POST" class="space-y-5">
             @csrf
 
             <div>
@@ -57,9 +69,8 @@
                 @enderror
             </div>
 
-            {{-- CHANGEMENT : options alignées sur les 3 rôles actuels de
-                 UserRole (CLIENT=0, SUPER_ADMIN=1, ADMINS=2). Pas de
-                 VENDEUR séparé : ADMINS couvre admin/vendeur/production. --}}
+            {{-- CHANGEMENT : liste réduite (jamais CLIENT), via $rolesStaff
+                 filtré côté contrôleur. --}}
             <div>
                 <label class="block text-sm font-semibold text-slate-700 mb-1.5">
                     Rôle <span class="text-rose-500">*</span>
@@ -69,7 +80,7 @@
                                @error('role') border-rose-500 bg-rose-50/30 @else border-slate-200 @enderror text-slate-900"
                         required>
                     <option value="">-- Choisir --</option>
-                    @foreach (\App\Enums\UserRole::cases() as $role)
+                    @foreach ($rolesStaff as $role)
                         <option value="{{ $role->value }}" {{ old('role') == $role->value ? 'selected' : '' }}>
                             {{ $role->label() }}
                         </option>
@@ -105,7 +116,7 @@
             <div class="flex items-center gap-3 pt-6 border-t border-slate-100">
                 <button type="submit"
                         class="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm rounded-xl shadow-sm transition-colors">
-                    <i class="ti ti-device-floppy"></i> Créer l'utilisateur
+                    <i class="ti ti-device-floppy"></i> Créer le compte
                 </button>
                 <a href="{{ route('admin.users.list') }}"
                    class="inline-flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 font-medium text-sm rounded-xl shadow-sm transition-colors">

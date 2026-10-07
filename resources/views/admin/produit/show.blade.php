@@ -17,8 +17,31 @@
                         <div class="card-header">Stock lié</div>
                         <div class="card-body">
                             @if ($produit->produitStock)
-                                <p class="mb-1"><strong>{{ $produit->produitStock->stock->name_stock ?? '—' }}</strong></p>
-                                <p class="mb-1">Quantité disponible : {{ $produit->produitStock->quantite_disponible }}</p>
+                                @php $stock = $produit->produitStock->stock; @endphp
+                                <p class="mb-3"><strong>{{ $stock->name_stock ?? '—' }}</strong></p>
+
+                                {{-- AJOUT : détail magasin / réserve --}}
+                                <div class="row text-center mb-3">
+                                    <div class="col-4">
+                                        <div class="p-2 border rounded bg-light">
+                                            <div class="text-muted small">🏪 Magasin</div>
+                                            <div class="fw-bold">{{ number_format($stock->quantite_magasin, 2, ',', ' ') }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 border rounded bg-light">
+                                            <div class="text-muted small">📦 Réserve</div>
+                                            <div class="fw-bold">{{ number_format($stock->quantite, 2, ',', ' ') }}</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="p-2 border rounded bg-success bg-opacity-10">
+                                            <div class="text-muted small">Total</div>
+                                            <div class="fw-bold">{{ number_format($stock->quantite_totale, 2, ',', ' ') }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <p class="mb-0 text-muted">Seuil d'alerte : {{ $produit->produitStock->seuil_alerte }}</p>
 
                                 @if ($produit->produitStock->enAlerte())
@@ -39,7 +62,9 @@
                                     <th>Ingrédient</th>
                                     <th class="text-end">Quantité nécessaire</th>
                                     <th>Unité</th>
-                                    <th class="text-end">Disponible</th>
+                                    <th class="text-end">🏪 Magasin</th>
+                                    <th class="text-end">📦 Réserve</th>
+                                    <th class="text-end">Total dispo</th>
                                 </tr>
                                 </thead>
                                 <tbody>
@@ -48,11 +73,13 @@
                                         <td>{{ $composition->stock->name_stock ?? '—' }}</td>
                                         <td class="text-end">{{ $composition->quantite_necessaire }}</td>
                                         <td>{{ $composition->unite }}</td>
-                                        <td class="text-end">{{ $composition->stock->quantite ?? 0 }}</td>
+                                        <td class="text-end">{{ number_format($composition->stock->quantite_magasin ?? 0, 2, ',', ' ') }}</td>
+                                        <td class="text-end">{{ number_format($composition->stock->quantite ?? 0, 2, ',', ' ') }}</td>
+                                        <td class="text-end fw-bold">{{ number_format($composition->stock->quantite_totale ?? 0, 2, ',', ' ') }}</td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="4" class="text-center text-muted py-3">Aucun ingrédient défini.</td>
+                                        <td colspan="6" class="text-center text-muted py-3">Aucun ingrédient défini.</td>
                                     </tr>
                                 @endforelse
                                 </tbody>

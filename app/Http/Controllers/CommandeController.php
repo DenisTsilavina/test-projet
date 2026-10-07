@@ -43,13 +43,14 @@ class CommandeController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'date_besoin'                 => 'nullable|date',
-            'date_livraison'               => 'nullable|date',
-            'remarque'                     => 'nullable|string',
-            'lignes'                       => 'required|array|min:1',
-            'lignes.*.produit_id'          => 'required|exists:produits,id',
-            'lignes.*.quantite'            => 'required|integer|min:1',
-            'lignes.*.prix_unitaire'       => 'required|numeric|min:0',
+            'date_besoin' => 'nullable|date',
+            'date_livraison' => 'nullable|date',
+            'remarque' => 'nullable|string',
+            'lignes' => 'required|array|min:1',
+            'lignes.*.produit_id' => 'required|exists:produits,id',
+            'lignes.*.quantite' => 'required|integer|min:1',
+            'lignes.*.prix_unitaire' => 'required|numeric|min:0',
+            'lignes.*.prix_unitaire' => 'required|numeric|min:0',
         ]);
 
         // CHANGEMENT : appel de la version centralisée dans Commande.php,
@@ -65,25 +66,25 @@ class CommandeController extends Controller
                 ->sum(fn ($l) => $l['quantite'] * $l['prix_unitaire']);
 
             $commande = Commande::create([
-                'client_id'      => auth()->id(),
+                'client_id' => auth()->id(),
                 'date_commande'  => now(),
-                'date_besoin'    => $validated['date_besoin'] ?? null,
+                'date_besoin' => $validated['date_besoin'] ?? null,
                 'date_livraison' => $validated['date_livraison'] ?? null,
-                'statut'         => 'en_attente',
-                'remarque'       => $validated['remarque'] ?? null,
-                'total'          => $total,
+                'statut' => 'en_attente',
+                'remarque' => $validated['remarque'] ?? null,
+                'total' => $total,
             ]);
 
             foreach ($validated['lignes'] as $ligne) {
                 $produit = Produit::find($ligne['produit_id']);
 
                 LigneCommande::create([
-                    'commande_id'   => $commande->id,
-                    'produit_id'    => $produit->id,
-                    'type_produit'  => $produit->type,
-                    'quantite'      => $ligne['quantite'],
+                    'commande_id' => $commande->id,
+                    'produit_id' => $produit->id,
+                    'type_produit' => $produit->type,
+                    'quantite'=> $ligne['quantite'],
                     'prix_unitaire' => $ligne['prix_unitaire'],
-                    'total_ligne'   => $ligne['quantite'] * $ligne['prix_unitaire'],
+                    'total_ligne' => $ligne['quantite'] * $ligne['prix_unitaire'],
                 ]);
             }
 

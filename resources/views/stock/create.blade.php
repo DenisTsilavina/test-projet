@@ -49,9 +49,21 @@
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
                         <i class="text-base ti ti-user-shield"></i>
                     </div>
+                    @php
+                        $userRoleLabel = 'Administrateur';
+                        try {
+                            if (method_exists(auth()->user(), 'roleService')) {
+                                $userRoleLabel = auth()->user()->roleService()->role()->label();
+                            } elseif (isset(auth()->user()->role)) {
+                                $userRoleLabel = auth()->user()->role;
+                            }
+                        } catch (\Throwable $e) {
+                            $userRoleLabel = 'Utilisateur';
+                        }
+                    @endphp
                     <input type="text"
                            class="w-full pl-9 pr-3 py-2 border border-slate-200 bg-slate-50 text-slate-500 rounded-lg text-sm cursor-not-allowed"
-                           value="{{ auth()->user()->name }} ({{ auth()->user()->roleService()->role()->label() }})"
+                           value="{{ auth()->user()->name ?? auth()->user()->nom }} ({{ $userRoleLabel }})"
                            readonly>
                 </div>
                 <p class="mt-1 text-xs text-slate-400">Enregistré automatiquement avec votre compte.</p>
@@ -71,8 +83,7 @@
                 @enderror
             </div>
 
-            {{-- CHANGEMENT : un stock = UNE unité + UNE quantité + un prix
-                 d'achat moyen. Plus de cases à cocher multiples. --}}
+            {{-- Unité + Quantité + Prix d'achat moyen --}}
             <div class="pt-4 border-t border-slate-100 grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-1.5">
@@ -85,7 +96,7 @@
                         <option value="">-- Choisir --</option>
                         @foreach ($unites as $unite)
                             <option value="{{ $unite->id }}" {{ old('unite_id') == $unite->id ? 'selected' : '' }}>
-                                {{ $unite->nom }} ({{ $unite->symbole }})
+                                {{ $unite->nom_unite ?? $unite->nom }} ({{ $unite->symbole }})
                             </option>
                         @endforeach
                     </select>
@@ -111,7 +122,7 @@
                     <label class="block text-sm font-semibold text-slate-700 mb-1.5">
                         Prix d'achat moyen
                     </label>
-                    <input type="number" min="0" name="prix_achat_moyen"
+                    <input type="number" step="any" min="0" name="prix_achat_moyen"
                            class="w-full px-3 py-2 border rounded-lg shadow-sm text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500
                                   @error('prix_achat_moyen') border-rose-500 bg-rose-50/30 text-rose-900 @else border-slate-200 text-slate-900 @enderror"
                            value="{{ old('prix_achat_moyen') }}" placeholder="Ar">

@@ -72,19 +72,33 @@
                             </div>
                         </div>
 
-                        {{-- CHANGEMENT : une seule unité + une seule quantité
-                             (plus de pivot stock_unite). --}}
-                        <div class="flex flex-wrap gap-1.5">
+                        {{-- Quantité globale + Statut de disponibilité du stock --}}
+                        <div class="flex items-center gap-2 flex-wrap">
                             @if ($stock->unite)
-                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-semibold
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold
                                      {{ $stock->quantite > 0
-                                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                                            : 'bg-slate-100 text-slate-500 border border-slate-200' }}">
-                                    {{ $stock->unite->symbole }}
+                                            ? 'bg-slate-100 text-slate-800 border border-slate-200'
+                                            : 'bg-rose-50 text-rose-600 border border-rose-200' }}">
                                     <span class="font-bold">{{ number_format($stock->quantite, 2, ',', ' ') }}</span>
+                                    <span>{{ $stock->unite->symbole }}</span>
                                 </span>
                             @else
                                 <span class="text-xs text-slate-400 italic">Aucune unité</span>
+                            @endif
+
+                            {{-- Badge Statut Disponibilité Stock --}}
+                            @if ($stock->quantite > 10)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Disponible
+                                </span>
+                            @elseif ($stock->quantite > 0)
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Stock Faible
+                                </span>
+                            @else
+                                <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Indisponible / Rupture
+                                </span>
                             @endif
                         </div>
 
@@ -130,6 +144,7 @@
                                     <th class="px-5 py-3">Description</th>
                                     <th class="px-5 py-3 text-center">Effectif</th>
                                     <th class="px-5 py-3">Région</th>
+                                    <th class="px-5 py-3 text-center">Disponibilité</th>
                                     <th class="px-5 py-3 text-right">Prix achat</th>
                                     <th class="px-5 py-3 text-right">Prix vente</th>
                                     <th class="px-5 py-3 text-right">Actions</th>
@@ -138,9 +153,6 @@
                                 <tbody class="divide-y divide-slate-50">
 
                                 @foreach ($descriptions as $desc)
-                                    {{-- CHANGEMENT : sousCategories (pluriel, hasMany) ->
-                                         sousCategorie (singulier, hasOne). Une description
-                                         n'a plus qu'UNE seule sous-catégorie de prix. --}}
                                     @php $subCat = $desc->sousCategorie; @endphp
 
                                     <tr class="hover:bg-slate-50/60 transition-colors">
@@ -156,6 +168,20 @@
                                                 </button>
                                             @endunless
                                         </td>
+
+                                        {{-- Disponibilité selon l'effectif ou la quantité du stock --}}
+                                        <td class="px-5 py-3.5 text-center">
+                                            @if (($desc->effectif > 0) || ($stock->quantite > 0))
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                    Prêt à la vente
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-medium bg-rose-50 text-rose-600 border border-rose-200">
+                                                    Épuisé
+                                                </span>
+                                            @endif
+                                        </td>
+
                                         <td class="px-5 py-3.5 text-right text-slate-500 tabular-nums text-xs">
                                             {{ $subCat && $subCat->prix_achat ? number_format($subCat->prix_achat, 0, ',', ' ') . ' Ar' : '—' }}
                                         </td>

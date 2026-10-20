@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\CommandeController;
 use App\Http\Controllers\ClientRegisterController;
 use App\Enums\UserRole;
 
@@ -61,3 +62,11 @@ Route::get('/{any}', function () {
     }
     return view('layouts.client');
 })->where('any', '.*')->middleware('auth');
+
+
+Route::middleware(['auth'])->group(function () {
+    // API de passage de commande depuis le panier Vue.js
+    Route::post('/commandes', [CommandeController::class, 'store']);
+    Route::get('/commandes', [CommandeController::class, 'index']);
+    Route::get('/commandes/{commande}', [CommandeController::class, 'show']);
+});

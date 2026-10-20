@@ -136,7 +136,7 @@
 </head>
 <body>
 <header class="navbar">
-    <div style="font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; color: var(--gold);">
+    <div style="font-family: 'Fraunces', serif; font-size: 1.4rem; font-weight: 600; color: var(--gold);text-align:'center';">
         Tsenan'i Vohitsoa
     </div>
     <nav class="nav-links">
@@ -159,7 +159,7 @@
         <h1 class="title">Tsenan'i Vohitsoa</h1>
         <p class="subtitle">Gargotte & Épicerie — Prêt à prendre toutes les commandes.</p>
         <div class="location-tag">
-            📍 Vohitsoakofafabe, Antsoatany, Antsirabe II — RN 7 (Code postal 111)
+            📍 Vohitsoa <br> Akofafabe, Antsoatany, <br> Antsirabe II  Vakinakaratra— <br> RN 7 (Code postal 111)
         </div>
     </div>
 </main>

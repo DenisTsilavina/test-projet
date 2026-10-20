@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AchatController;
 use App\Http\Controllers\ProduitController;
+use App\Http\Controllers\CommandeController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\VenteController;
@@ -23,8 +24,7 @@ Route::prefix('admin/users')
         Route::get('/create',      [UserController::class, 'create'])->name('create');
         Route::post('/',           [UserController::class, 'store'])->name('store');
 
-        // AJOUT : création d'un membre du personnel (admin/vendeur),
-        // séparée de create()/store() qui ne créent que des clients.
+        // AJOUT : création d'un membre du personnel (admin/vendeur)
         Route::get('/staff/create', [UserController::class, 'createStaff'])->name('create-staff');
         Route::post('/staff',       [UserController::class, 'storeStaff'])->name('store-staff');
 
@@ -46,9 +46,6 @@ Route::prefix('admin')
         Route::post('/vente',           [VenteController::class, 'store'])->name('vente.store');
         Route::delete('/vente/{vente}', [VenteController::class, 'destroy'])->name('vente.destroy');
 
-        // AJOUT : manquait entièrement. VenteController::dashboard() et sa
-        // vue admin.vente.dashboard existent depuis la refonte du module
-        // Vente, mais n'avaient jamais de route associée.
         Route::get('/vente/dashboard', [VenteController::class, 'dashboard'])->name('vente.dashboard');
 
         Route::get('/commandes', [CommandeAdminController::class, 'index'])->name('commandes.index');
@@ -121,4 +118,15 @@ Route::middleware('auth')->group(function () {
 */
 Route::middleware('auth')->group(function () {
     Route::resource('produit', ProduitController::class);
+});
+
+/*
+|--------------------------------------------------------------------------
+| Commandes API (Espace Client / Vue.js SPA)
+|--------------------------------------------------------------------------
+*/
+Route::middleware(['auth'])->group(function () {
+    Route::post('/commandes', [CommandeController::class, 'store']);
+    Route::get('/commandes', [CommandeController::class, 'index']);
+    Route::get('/commandes/{commande}', [CommandeController::class, 'show']);
 });
